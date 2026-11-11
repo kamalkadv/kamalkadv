@@ -1,0 +1,16 @@
+android_app {
+    name: "KioskLock",
+    srcs: ["src/**/*.java"],
+    resource_dirs: ["res"],
+    manifest: "AndroidManifest.xml",
+
+    // Butuh hidden/system API: DevicePolicyManager.setDeviceOwner, PersistentDataBlockManager.
+    platform_apis: true,
+    certificate: "platform",
+    privileged: true,
+    system_ext_specific: true,
+
+    optimize: {
+        enabled: false,
+    },
+}

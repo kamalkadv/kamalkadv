@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Package yang diizinkan menulis PersistentDataBlock (partisi FRP).
+         Default AOSP/GMS biasanya Setup Wizard Google. Dengan mengganti ke KioskLock,
+         data lock kita bertahan walau HP di-factory reset (dari Settings maupun recovery).
+         CATATAN: jika ROM Anda memakai GMS, ini menggantikan FRP Google. -->
+    <string name="config_persistentDataPackageName" translatable="false">id.kioskos.lock</string>
+</resources>

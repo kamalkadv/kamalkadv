@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Bisa di-override per produk dengan overlay (PRODUCT_PACKAGE_OVERLAYS). -->
+
+    <!-- Base URL server lock. Wajib HTTPS. -->
+    <string name="config_server_url" translatable="false">https://lock.example.com</string>
+
+    <!-- Public key server (EC P-256, X.509 SubjectPublicKeyInfo, Base64, tanpa header PEM).
+         Setiap respons server wajib ditandatangani; tanpa ini siapa pun yang bisa
+         memalsukan DNS/server bisa membuka kunci perangkat. -->
+    <string name="config_server_public_key" translatable="false">REPLACE_WITH_BASE64_PUBLIC_KEY</string>
+
+    <!-- Interval sinkron ke server (menit, minimum 15). -->
+    <integer name="config_sync_interval_minutes">15</integer>
+
+    <!-- Blokir menu Factory Reset di Settings selama perangkat terdaftar. -->
+    <bool name="config_block_factory_reset">true</bool>
+</resources>

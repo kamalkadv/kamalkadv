@@ -1,0 +1,4 @@
+server/private_key.pem
+server/devices.json
+server/devices.json.tmp
+__pycache__/

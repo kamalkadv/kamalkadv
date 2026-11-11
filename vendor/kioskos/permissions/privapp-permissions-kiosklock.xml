@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<permissions>
+    <privapp-permissions package="id.kioskos.lock">
+        <permission name="android.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS"/>
+        <permission name="android.permission.MANAGE_DEVICE_ADMINS"/>
+        <permission name="android.permission.READ_PRIVILEGED_PHONE_STATE"/>
+        <permission name="android.permission.OEM_UNLOCK_STATE"/>
+        <permission name="android.permission.ACCESS_PDB_STATE"/>
+    </privapp-permissions>
+</permissions>
