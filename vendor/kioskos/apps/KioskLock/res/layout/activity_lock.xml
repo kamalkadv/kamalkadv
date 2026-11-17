@@ -1,11 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- ScrollView: di layar kecil, posisi mendatar, huruf besar, atau pesan panjang (maks. 500
+     karakter dari server), semua isi tetap bisa dijangkau, terutama tombol Panggilan darurat.
+     fillViewport + gravity center: jika isi muat, tetap di tengah layar seperti biasa. -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="#101418">
+
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
     android:orientation="vertical"
     android:gravity="center"
-    android:padding="32dp"
-    android:background="#101418">
+    android:padding="32dp">
 
     <TextView
         android:layout_width="wrap_content"
@@ -73,3 +81,4 @@
         android:layout_marginTop="8dp"
         android:text="@string/btn_emergency"/>
 </LinearLayout>
+</ScrollView>

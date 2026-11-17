@@ -56,7 +56,21 @@ Saat **terdaftar** (terkunci maupun tidak):
 
 Saat server mengirim `enrolled=false` (mis. cicilan lunas): semua restriksi dicabut.
 
-## Struktur repo
+## Tampilan di HP
+
+![Mockup layar KioskLock](docs/images/kiosklock-ui-mockup.png)
+
+*Mockup yang dibuat dari file layout (`res/layout/`), bukan screenshot perangkat. Bentuk
+tombol dan font mengikuti tema ROM. KioskUpdater tidak punya tampilan; ia bekerja di
+latar belakang.*
+
+1. **Layar kunci:** pesan & kontak dari server, ID perangkat, tombol Cek status, Wi-Fi, dan
+   Panggilan darurat. Tombol Home/Recents disembunyikan oleh Lock Task Mode.
+2. **Cek status gagal:** muncul pesan merah jika tidak ada internet.
+3. **Pemilih Wi-Fi** milik KioskLock sendiri (bukan Settings).
+4. **Kata sandi Wi-Fi:** setelah tersambung, status langsung dicek ke server.
+
+
 
 ```
 vendor/kioskos/
