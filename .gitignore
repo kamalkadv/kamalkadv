@@ -10,3 +10,4 @@ server/public_key.b64
 avb*.pem
 avb_pkmd.bin
 keys/
+server/data/

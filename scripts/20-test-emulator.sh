@@ -58,7 +58,7 @@ start_server() {
     if curl -s -o /dev/null "http://127.0.0.1:$PORT/"; then
         die "Port $PORT sudah dipakai. Matikan server lain dulu (skrip ini menjalankan servernya sendiri)."
     fi
-    ADMIN_TOKEN="$TOKEN" PORT="$PORT" DB_PATH="$TMPDIR_TEST/devices.json" \
+    ADMIN_TOKEN="$TOKEN" PORT="$PORT" DATA_DIR="$TMPDIR_TEST/data" \
         python3 "$SERVER_DIR/server.py" >"$TMPDIR_TEST/server.log" 2>&1 &
     SERVER_PID=$!
     wait_for 15 curl -s -o /dev/null "http://127.0.0.1:$PORT/" \

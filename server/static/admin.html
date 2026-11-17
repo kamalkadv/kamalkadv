@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>KioskOS Admin</title>
+  <link rel="stylesheet" href="/admin/static/admin.css">
+  <script src="/admin/static/admin.js" defer></script>
+</head>
+<body>
+  <!-- Login -->
+  <main id="login" class="login" hidden>
+    <form id="login-form" class="card login-card">
+      <h1>KioskOS Admin</h1>
+      <p class="muted">Masukkan token admin. Token dibuat dengan <code>manage.py add-admin</code>.</p>
+      <label for="token">Token admin</label>
+      <input id="token" type="password" autocomplete="current-password" required>
+      <p id="login-error" class="error" hidden></p>
+      <button type="submit" class="primary">Masuk</button>
+    </form>
+  </main>
+
+  <!-- Aplikasi -->
+  <div id="app" hidden>
+    <header class="topbar">
+      <strong class="brand">KioskOS Admin</strong>
+      <nav class="tabs" role="tablist">
+        <button role="tab" data-tab="devices" aria-selected="true">Perangkat</button>
+        <button role="tab" data-tab="releases" aria-selected="false">Rilis OTA</button>
+        <button role="tab" data-tab="audit" aria-selected="false">Log audit</button>
+      </nav>
+      <span class="spacer"></span>
+      <span id="whoami" class="muted"></span>
+      <button id="logout" class="ghost">Keluar</button>
+    </header>
+
+    <p id="flash" class="flash" hidden></p>
+
+    <!-- Perangkat -->
+    <section id="tab-devices" class="tab">
+      <div class="stats" id="stats"></div>
+      <div class="toolbar">
+        <input id="filter" type="search" placeholder="Cari serial, IMEI, catatan…" aria-label="Cari perangkat">
+        <select id="status-filter" aria-label="Filter status">
+          <option value="">Semua status</option>
+          <option value="locked">Terkunci</option>
+          <option value="active">Aktif</option>
+          <option value="released">Lepas</option>
+        </select>
+        <span class="spacer"></span>
+        <button id="add-device" class="primary">+ Daftarkan perangkat</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Serial</th><th>Status</th><th>Pesan / catatan</th><th>Terakhir online</th><th>Build</th><th class="actions-col">Aksi</th></tr>
+          </thead>
+          <tbody id="devices-body"></tbody>
+        </table>
+        <p id="devices-empty" class="empty" hidden>Belum ada perangkat.</p>
+      </div>
+    </section>
+
+    <!-- Rilis OTA -->
+    <section id="tab-releases" class="tab" hidden>
+      <p class="muted">Rilis dipublikasikan dengan <code>scripts/31-publish-release.sh</code>.
+        Atur <em>rollout</em> untuk peluncuran bertahap, atau jeda rilis bermasalah.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Versi</th><th>Device / channel</th><th>Jenis</th><th>Build</th><th>Ukuran</th><th>Rollout</th><th>Status</th></tr>
+          </thead>
+          <tbody id="releases-body"></tbody>
+        </table>
+        <p id="releases-empty" class="empty" hidden>Belum ada rilis.</p>
+      </div>
+    </section>
+
+    <!-- Audit -->
+    <section id="tab-audit" class="tab" hidden>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Waktu</th><th>Admin</th><th>Aksi</th><th>Target</th><th>Detail</th><th>IP</th></tr></thead>
+          <tbody id="audit-body"></tbody>
+        </table>
+        <p id="audit-empty" class="empty" hidden>Belum ada aktivitas.</p>
+      </div>
+    </section>
+  </div>
+
+  <!-- Dialog kunci -->
+  <dialog id="lock-dialog">
+    <form method="dialog" id="lock-form">
+      <h2>Kunci perangkat</h2>
+      <p class="muted" id="lock-serial"></p>
+      <label for="lock-message">Pesan di layar kunci</label>
+      <textarea id="lock-message" rows="3" maxlength="500" required></textarea>
+      <label for="lock-contact">Kontak (telepon/WA)</label>
+      <input id="lock-contact" maxlength="100">
+      <div class="dialog-actions">
+        <button value="cancel" formnovalidate class="ghost">Batal</button>
+        <button value="ok" class="danger">Kunci</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Dialog tambah -->
+  <dialog id="add-dialog">
+    <form method="dialog" id="add-form">
+      <h2>Daftarkan perangkat</h2>
+      <label for="add-serial">Serial (ro.serialno)</label>
+      <input id="add-serial" required maxlength="64" pattern="[A-Za-z0-9._\-]+">
+      <label for="add-note">Catatan (mis. nama pelanggan / no. kontrak)</label>
+      <input id="add-note" maxlength="500">
+      <div class="dialog-actions">
+        <button value="cancel" formnovalidate class="ghost">Batal</button>
+        <button value="ok" class="primary">Daftarkan</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Dialog konfirmasi -->
+  <dialog id="confirm-dialog">
+    <form method="dialog">
+      <h2 id="confirm-title"></h2>
+      <p id="confirm-text"></p>
+      <div class="dialog-actions">
+        <button value="cancel" class="ghost">Batal</button>
+        <button value="ok" class="danger" id="confirm-ok">Ya</button>
+      </div>
+    </form>
+  </dialog>
+</body>
+</html>
