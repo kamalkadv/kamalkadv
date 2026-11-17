@@ -3,6 +3,7 @@ android_app {
     srcs: ["src/**/*.java"],
     resource_dirs: ["res"],
     manifest: "AndroidManifest.xml",
+    static_libs: ["kioskos-common"],
 
     // Butuh hidden/system API: DevicePolicyManager.setDeviceOwner, PersistentDataBlockManager.
     platform_apis: true,

@@ -7,13 +7,17 @@
 #   $(call inherit-product, vendor/kioskos/kioskos.mk)
 #
 
-# Aplikasi sistem lock/kiosk (privileged, ditandatangani dengan platform key).
+# Aplikasi sistem:
+#   KioskLock    - lock/kiosk (privileged, ditandatangani platform key)
+#   KioskUpdater - update OTA A/B lewat update_engine (privileged, releasekey)
 PRODUCT_PACKAGES += \
-    KioskLock
+    KioskLock \
+    KioskUpdater
 
-# Allowlist izin privileged untuk KioskLock.
+# Allowlist izin privileged untuk aplikasi KioskOS.
 PRODUCT_COPY_FILES += \
-    vendor/kioskos/permissions/privapp-permissions-kiosklock.xml:$(TARGET_COPY_OUT_SYSTEM_EXT)/etc/permissions/privapp-permissions-kiosklock.xml
+    vendor/kioskos/permissions/privapp-permissions-kiosklock.xml:$(TARGET_COPY_OUT_SYSTEM_EXT)/etc/permissions/privapp-permissions-kiosklock.xml \
+    vendor/kioskos/permissions/privapp-permissions-kioskupdater.xml:$(TARGET_COPY_OUT_SYSTEM_EXT)/etc/permissions/privapp-permissions-kioskupdater.xml
 
 # Overlay framework: jadikan KioskLock pemilik "persistent data block" (partisi FRP),
 # satu-satunya area yang TIDAK dihapus oleh factory reset dan bisa ditulis aplikasi.

@@ -1,0 +1,6 @@
+// Kode bersama KioskLock & KioskUpdater: HTTP + verifikasi tanda tangan respons server.
+java_library {
+    name: "kioskos-common",
+    srcs: ["src/**/*.java"],
+    sdk_version: "current",
+}

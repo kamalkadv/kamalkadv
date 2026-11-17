@@ -13,16 +13,7 @@ if command -v ccache >/dev/null; then
     ccache -M 50G >/dev/null
 fi
 
-if [[ -z "$RELEASE" ]]; then
-    # Android 14+ butuh nama release config di lunch. Pilih yang tersedia di tree ini.
-    available="$(find build/release -path '*release_configs*' \( -name '*.textproto' -o -name '*.scl' \) \
-        -printf '%f\n' 2>/dev/null | sed -E 's/\.(textproto|scl)$//' | sort -u)"
-    for candidate in aosp_current trunk_staging; do
-        if grep -qx "$candidate" <<<"$available"; then RELEASE="$candidate"; break; fi
-    done
-    [[ -n "$RELEASE" ]] || RELEASE="$(head -n1 <<<"$available")"
-    [[ -n "$RELEASE" ]] || die "Tidak bisa mendeteksi release config. Set manual: RELEASE=<nama> $0"
-fi
+detect_release
 TARGET="$PRODUCT-$RELEASE-$VARIANT"
 
 set +u  # envsetup.sh tidak kompatibel dengan 'set -u'

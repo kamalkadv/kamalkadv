@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Bisa di-override per produk dengan overlay. Biasanya sama dengan KioskLock. -->
+    <string name="config_server_url" translatable="false">https://lock.example.com</string>
+    <string name="config_server_public_key" translatable="false">REPLACE_WITH_BASE64_PUBLIC_KEY</string>
+
+    <!-- Channel rilis: stable / beta / dll. -->
+    <string name="config_ota_channel" translatable="false">stable</string>
+
+    <!-- Seberapa sering cek update (jam). -->
+    <integer name="config_ota_check_interval_hours">6</integer>
+
+    <!-- true = hanya unduh lewat jaringan tak berkuota (Wi-Fi), hemat data seluler pelanggan. -->
+    <bool name="config_ota_unmetered_only">true</bool>
+</resources>

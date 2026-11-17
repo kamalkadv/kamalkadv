@@ -38,7 +38,11 @@ PUBKEY="$(tr -d '\n' < "$PUBKEY_FILE")"
 
 log "Kunci tanda tangan OS"
 SIGNING_MK=""
-if [[ -f "$KEYS_DIR/releasekey.pk8" ]]; then
+if [[ "$SIGN_AT_BUILD" == 0 ]]; then
+    # Alur rilis produksi: build dengan test-keys, lalu ditandatangani ulang oleh
+    # 30-release.sh (sign_target_files_apks). Kunci tidak perlu ada di mesin build.
+    echo "    SIGN_AT_BUILD=0: build memakai test-keys, ditandatangani ulang saat rilis"
+elif [[ -f "$KEYS_DIR/releasekey.pk8" ]]; then
     KEYS_REL="$(realpath --relative-to="$AOSP_DIR" "$KEYS_DIR")"
     [[ "$KEYS_REL" != ..* ]] \
         || die "KEYS_DIR ($KEYS_DIR) harus berada di dalam $AOSP_DIR agar bisa dipakai build."
@@ -51,8 +55,7 @@ else
 fi
 
 log "Buat produk $PRODUCT"
-mkdir -p "$DEST/products" \
-         "$DEST/emu_overlay/vendor/kioskos/apps/KioskLock/res/values"
+mkdir -p "$DEST/products"
 
 cat > "$DEST/products/AndroidProducts.mk" <<MK
 # Dibuat otomatis oleh scripts/02-install-kioskos.sh - jangan diedit manual.
@@ -65,13 +68,15 @@ cat > "$DEST/products/$PRODUCT.mk" <<MK
 \$(call inherit-product, $EMU_MK)
 \$(call inherit-product, vendor/kioskos/kioskos.mk)
 
-# Arahkan KioskLock ke server lokal di PC (10.0.2.2 = host dilihat dari emulator).
+# Arahkan KioskLock & KioskUpdater ke $SERVER_URL.
 PRODUCT_PACKAGE_OVERLAYS += vendor/kioskos/emu_overlay
 
 # Beberapa produk generic membatasi file apa saja yang boleh masuk partisi system.
 PRODUCT_ARTIFACT_PATH_REQUIREMENT_ALLOWED_LIST += \\
     system_ext/priv-app/KioskLock/% \\
-    system_ext/etc/permissions/privapp-permissions-kiosklock.xml
+    system_ext/priv-app/KioskUpdater/% \\
+    system_ext/etc/permissions/privapp-permissions-kiosklock.xml \\
+    system_ext/etc/permissions/privapp-permissions-kioskupdater.xml
 
 # Kunci tanda tangan (kosong = test-keys AOSP).
 $SIGNING_MK
@@ -81,13 +86,16 @@ PRODUCT_BRAND := KioskOS
 PRODUCT_MODEL := KioskOS Emulator
 MK
 
-cat > "$DEST/emu_overlay/vendor/kioskos/apps/KioskLock/res/values/config.xml" <<XML
+for app in KioskLock KioskUpdater; do
+    mkdir -p "$DEST/emu_overlay/vendor/kioskos/apps/$app/res/values"
+    cat > "$DEST/emu_overlay/vendor/kioskos/apps/$app/res/values/config.xml" <<XML
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Dibuat otomatis oleh scripts/02-install-kioskos.sh - jangan diedit manual. -->
 <resources>
-    <string name="config_server_url" translatable="false">http://10.0.2.2:8080</string>
+    <string name="config_server_url" translatable="false">$SERVER_URL</string>
     <string name="config_server_public_key" translatable="false">$PUBKEY</string>
 </resources>
 XML
+done
 
 log "Selesai. Berikutnya: ./scripts/03-build-emulator.sh"

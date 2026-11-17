@@ -62,7 +62,9 @@ Saat server mengirim `enrolled=false` (mis. cicilan lunas): semua restriksi dica
 vendor/kioskos/
 ├── kioskos.mk                       # di-inherit oleh produk device Anda
 ├── overlay/…/config.xml             # config_persistentDataPackageName = id.kioskos.lock
-├── permissions/privapp-permissions-kiosklock.xml
+├── permissions/privapp-permissions-*.xml
+├── libs/common/                     # kioskos-common: HTTP + verifikasi tanda tangan server
+├── apps/KioskUpdater/               # update OTA A/B lewat update_engine
 └── apps/KioskLock/                  # aplikasi sistem (Device Owner)
     ├── Android.bp
     ├── AndroidManifest.xml
@@ -77,10 +79,13 @@ vendor/kioskos/
         ├── ServerClient.java        # ambil status + verifikasi tanda tangan
         ├── SyncJobService.java      # sinkron berkala
         └── BootReceiver.java
-scripts/                             # otomatisasi build emulator (lihat docs/BUILD.md)
+scripts/                             # build, kunci, uji, rilis & publikasi OTA
 server/
-├── server.py                        # server contoh (stdlib + cryptography)
-└── gen_keys.py                      # buat kunci ECDSA penandatangan
+├── server.py                        # status kunci, OTA, API admin (stdlib + cryptography)
+├── static/                          # dashboard admin (/admin/)
+├── manage.py                        # kelola admin & token
+├── gen_keys.py                      # buat kunci ECDSA penandatangan
+└── test_server.py                   # tes server
 ```
 
 ## Langkah membangun
@@ -89,6 +94,8 @@ server/
 > `scripts/` mengotomatiskan setup PC, download AOSP, pemasangan KioskOS, dan build.
 > Kunci tanda tangan sendiri (release keys + AVB): [docs/SIGNING.md](docs/SIGNING.md).
 > Uji otomatis kunci → reset → terkunci lagi: [docs/TESTING.md](docs/TESTING.md).
+> Server & dashboard admin: [docs/SERVER.md](docs/SERVER.md).
+> Rilis produksi & update OTA: [docs/RELEASE.md](docs/RELEASE.md).
 
 ### 1. Siapkan AOSP / LineageOS untuk device Anda
 Anda butuh source tree yang bisa di-build untuk device target (device tree,
@@ -135,21 +142,30 @@ m
 ```
 
 ### 6. Jalankan server & kelola perangkat
-```bash
-ADMIN_TOKEN=rahasia python3 server/server.py   # contoh, taruh di belakang HTTPS
 
+Kelola perangkat dan rilis OTA lewat **dashboard** di `https://<server>/admin/`
+(lihat [docs/SERVER.md](docs/SERVER.md)):
+
+```bash
+cd server && python3 manage.py add-admin budi       # token admin per orang
+ADMIN_TOKENS_FILE=data/admins.txt python3 server.py # taruh di belakang HTTPS
+```
+
+Atau lewat API langsung:
+
+```bash
 # daftarkan + kunci
 curl -X PUT -H 'Authorization: Bearer rahasia' \
   -d '{"locked":true,"message":"Cicilan bulan ini belum dibayar","contact":"0812-xxxx"}' \
-  https://lock.example.com/admin/devices/<SERIAL>
+  https://lock.example.com/admin/api/devices/<SERIAL>
 
 # buka kunci (tetap terdaftar)
 curl -X PUT -H 'Authorization: Bearer rahasia' -d '{"locked":false}' \
-  https://lock.example.com/admin/devices/<SERIAL>
+  https://lock.example.com/admin/api/devices/<SERIAL>
 
 # lepas perangkat (lunas)
 curl -X DELETE -H 'Authorization: Bearer rahasia' \
-  https://lock.example.com/admin/devices/<SERIAL>
+  https://lock.example.com/admin/api/devices/<SERIAL>
 ```
 
 ## Keamanan

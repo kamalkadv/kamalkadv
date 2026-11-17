@@ -1,0 +1,21 @@
+android_app {
+    name: "KioskUpdater",
+    srcs: ["src/**/*.java"],
+    resource_dirs: ["res"],
+    manifest: "AndroidManifest.xml",
+    static_libs: ["kioskos-common"],
+
+    // android.os.UpdateEngine adalah @SystemApi.
+    platform_apis: true,
+    privileged: true,
+    system_ext_specific: true,
+
+    // SENGAJA tidak memakai certificate "platform": aplikasi privileged yang ditandatangani
+    // releasekey berjalan di domain SELinux priv_app, yang di AOSP sudah boleh memanggil
+    // update_engine (aturan untuk updater GMS). Kunci platform memindahkan aplikasi ke domain
+    // platform_app yang tidak punya akses itu.
+
+    optimize: {
+        enabled: false,
+    },
+}
