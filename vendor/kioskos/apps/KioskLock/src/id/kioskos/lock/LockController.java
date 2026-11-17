@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.UserManager;
 import android.util.Log;
 
@@ -20,7 +21,6 @@ public final class LockController {
     /** Restriksi yang selalu aktif selama perangkat terdaftar. */
     private static final String[] BASE_RESTRICTIONS = {
             UserManager.DISALLOW_SAFE_BOOT,
-            UserManager.DISALLOW_DEBUGGING_FEATURES, // sembunyikan Developer Options & ADB
             UserManager.DISALLOW_ADD_USER,
             UserManager.DISALLOW_REMOVE_USER,
             UserManager.DISALLOW_USB_FILE_TRANSFER,
@@ -84,6 +84,11 @@ public final class LockController {
         for (String r : BASE_RESTRICTIONS) {
             setRestriction(r, state.enrolled);
         }
+        // Sembunyikan Developer Options & matikan ADB. Di build debug (userdebug/eng) boleh
+        // dilewati lewat config agar pengujian otomatis via ADB tetap bisa berjalan.
+        boolean blockDebug = !Build.IS_DEBUGGABLE || mContext.getResources().getBoolean(
+                R.bool.config_block_debugging_on_debuggable_builds);
+        setRestriction(UserManager.DISALLOW_DEBUGGING_FEATURES, state.enrolled && blockDebug);
         if (state.enrolled) {
             mStore.disableOemUnlock();
         }

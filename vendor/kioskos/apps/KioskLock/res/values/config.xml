@@ -15,4 +15,8 @@
 
     <!-- Blokir menu Factory Reset di Settings selama perangkat terdaftar. -->
     <bool name="config_block_factory_reset">true</bool>
+
+    <!-- Hanya berlaku di build userdebug/eng: true = tetap matikan ADB saat terdaftar.
+         Build "user" (produksi) SELALU mematikan ADB saat terdaftar. -->
+    <bool name="config_block_debugging_on_debuggable_builds">false</bool>
 </resources>

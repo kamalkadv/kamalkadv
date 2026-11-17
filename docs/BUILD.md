@@ -85,9 +85,9 @@ curl -X PUT -H 'Authorization: Bearer rahasia' \
   http://127.0.0.1:8080/admin/devices/$SERIAL
 ```
 
-Tekan **Cek status** di HP (atau tunggu sinkron otomatis). Uji lengkap, termasuk
-simulasi factory reset dengan `./scripts/04-run-emulator.sh --wipe`, dibahas di
-panduan pengujian berikutnya.
+Tekan **Cek status** di HP (atau tunggu sinkron otomatis). Uji lengkap dan otomatis,
+termasuk simulasi factory reset, ada di [TESTING.md](TESTING.md):
+`./scripts/20-test-emulator.sh`.
 
 ## Masalah umum
 
@@ -100,4 +100,4 @@ panduan pengujian berikutnya.
 | Error compile di `Provisioner.java` (`setDeviceOwner`) | Signature hidden API berbeda di versi Android Anda. Cek `frameworks/base/core/java/android/app/admin/DevicePolicyManager.java`. |
 | Error `artifact path requirement` | Tambahkan path yang disebut di pesan error ke `PRODUCT_ARTIFACT_PATH_REQUIREMENT_ALLOWED_LIST` di skrip 02. |
 | Emulator sangat lambat / tidak mau jalan | KVM tidak aktif. Cek `ls /dev/kvm`, aktifkan virtualisasi di BIOS, dan pastikan user ada di grup `kvm`. |
-| `getprop ro.frp.pst` kosong | Image emulator tidak punya partisi FRP; status kunci tidak akan bertahan setelah reset. Ini akan dibahas di panduan pengujian. |
+| `getprop ro.frp.pst` kosong | Image emulator tidak punya partisi FRP; status kunci tidak akan bertahan setelah reset. Lihat [TESTING.md](TESTING.md#tentang-partisi-frp-di-emulator). |
