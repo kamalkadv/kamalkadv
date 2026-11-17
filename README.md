@@ -73,6 +73,7 @@ vendor/kioskos/
         ├── PersistentLockStore.java # baca/tulis partisi FRP
         ├── LockController.java      # terapkan kebijakan Device Owner
         ├── LockActivity.java        # layar kiosk
+        ├── WifiActivity.java        # pemilih Wi-Fi sendiri (Settings tidak diizinkan saat terkunci)
         ├── ServerClient.java        # ambil status + verifikasi tanda tangan
         ├── SyncJobService.java      # sinkron berkala
         └── BootReceiver.java
@@ -157,10 +158,10 @@ curl -X DELETE -H 'Authorization: Bearer rahasia' \
   Tanpa ini, orang bisa memalsukan server/DNS untuk membuka kunci.
 - Status yang lebih lama dari yang tersimpan diabaikan (`issued_at`, anti-replay).
 - Simpan `private_key.pem` di HSM/KMS untuk produksi.
-- Di Lock Task Mode, `com.android.settings` diizinkan supaya panel Wi-Fi bisa
-  dibuka. Restriksi Device Owner tetap berlaku, tapi uji agar tidak ada jalan
-  keluar dari Settings di ROM Anda. Hapus dari daftar jika perangkat cukup
-  memakai data seluler.
+- Saat terkunci, hanya KioskLock dan dialer darurat (`com.android.phone`) yang
+  boleh berjalan. **Settings tidak diizinkan**; Wi-Fi dipilih lewat layar
+  pemilih Wi-Fi milik KioskLock sendiri (`WifiActivity`), sehingga tidak ada
+  jalan masuk ke Settings dari layar kunci.
 
 ### Batasan yang perlu dipahami
 - Jika **bootloader bisa di-unlock**, semua perlindungan bisa dilewati. Ini

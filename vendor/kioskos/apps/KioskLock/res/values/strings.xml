@@ -9,4 +9,32 @@
     <string name="checking">Memeriksa status…</string>
     <string name="check_failed">Gagal terhubung ke server. Pastikan ada koneksi internet.</string>
     <string name="device_id_label">ID Perangkat: %1$s</string>
+
+    <!-- Pemilih Wi-Fi -->
+    <string name="wifi_title">Wi-Fi</string>
+    <string name="wifi_off">Wi-Fi mati.</string>
+    <string name="wifi_turn_on">Nyalakan Wi-Fi</string>
+    <string name="wifi_turning_on">Menyalakan Wi-Fi…</string>
+    <string name="wifi_scanning">Mencari jaringan…</string>
+    <string name="wifi_not_connected">Belum tersambung. Pilih jaringan di bawah.</string>
+    <string name="wifi_connected">Tersambung ke %1$s</string>
+    <string name="wifi_connecting">Menyambung ke %1$s…</string>
+    <string name="wifi_failed">Gagal menyambung ke %1$s. Periksa kata sandi.</string>
+    <string name="wifi_password">Kata sandi</string>
+    <string name="wifi_password_optional">Kata sandi (kosongkan jika terbuka)</string>
+    <string name="wifi_password_too_short">Kata sandi Wi-Fi minimal 8 karakter.</string>
+    <string name="wifi_ssid">Nama jaringan (SSID)</string>
+    <string name="wifi_connect">Sambungkan</string>
+    <string name="wifi_scan">Cari ulang</string>
+    <string name="wifi_hidden">Jaringan tersembunyi</string>
+    <string name="wifi_hidden_short">Jaringan lain…</string>
+    <string name="wifi_back">Kembali</string>
+    <string name="wifi_open">Terbuka</string>
+    <string name="wifi_secured">Berkata sandi</string>
+    <string name="wifi_unsupported_short">Tidak didukung</string>
+    <string name="wifi_unsupported">Jaringan ini memakai keamanan WPA-Enterprise atau WEP yang tidak didukung di layar ini. Gunakan jaringan lain atau data seluler.</string>
+    <string name="wifi_current">Tersambung</string>
+    <string name="wifi_signal_strong">Sinyal kuat</string>
+    <string name="wifi_signal_medium">Sinyal sedang</string>
+    <string name="wifi_signal_weak">Sinyal lemah</string>
 </resources>

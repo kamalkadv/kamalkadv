@@ -23,6 +23,7 @@ Jalankan dari folder repo ini:
 ./scripts/00-setup-host.sh       # sekali saja: paket, tool 'repo', cek RAM/disk/KVM
 # buka terminal baru
 ./scripts/01-sync-aosp.sh        # download AOSP (~100+ GB, bisa berjam-jam)
+./scripts/05-compile-check.sh    # opsional: cek compile KioskLock dalam hitungan detik
 ./scripts/02-install-kioskos.sh  # pasang KioskOS + buat produk "kiosk_emu"
 ./scripts/03-build-emulator.sh   # build (pertama kali 2-6 jam)
 ./scripts/04-run-emulator.sh     # jalankan emulator
@@ -51,6 +52,11 @@ RELEASE=trunk_staging ./scripts/03-build-emulator.sh       # jika deteksi otomat
 
 **Setiap kali mengubah kode di repo ini, jalankan ulang 02 lalu 03.** Build ulang
 jauh lebih cepat dari build pertama.
+
+> **Cek cepat sebelum build:** `./scripts/05-compile-check.sh` mengompilasi kode Java
+> KioskLock terhadap framework Android 15 lengkap (termasuk hidden API) dalam beberapa
+> detik, tanpa source AOSP. Butuh JDK 17+ dan sekali download ~190 MB dari Maven Central.
+> Resource, manifest, dan izin tetap baru teruji saat build AOSP.
 
 ## Menjalankan server uji
 

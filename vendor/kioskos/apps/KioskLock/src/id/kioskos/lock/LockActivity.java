@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Intent;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -48,9 +47,10 @@ public class LockActivity extends Activity {
                 Log.w(TAG, "Emergency dialer tidak tersedia", e);
             }
         });
-        // Panel Wi-Fi, supaya perangkat yang baru di-reset bisa online untuk cek status.
+        // Pemilih Wi-Fi milik KioskLock (bukan panel Settings), supaya perangkat yang baru
+        // di-reset bisa online untuk cek status tanpa membuka jalan ke Settings.
         findViewById(R.id.btn_wifi).setOnClickListener(
-                v -> startActivity(new Intent(Settings.Panel.ACTION_WIFI)));
+                v -> startActivity(new Intent(this, WifiActivity.class)));
 
         handleIntent(getIntent());
     }

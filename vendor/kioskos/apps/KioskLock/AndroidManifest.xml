@@ -4,6 +4,11 @@
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
+    <!-- Signature: didapat karena ditandatangani kunci platform. Dipakai WifiManager.connect()
+         dan agar hasil scan Wi-Fi bisa dibaca tanpa izin lokasi. -->
+    <uses-permission android:name="android.permission.NETWORK_SETTINGS"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS"/>
     <uses-permission android:name="android.permission.MANAGE_DEVICE_ADMINS"/>
@@ -65,6 +70,15 @@
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
+
+        <!-- Pemilih Wi-Fi sendiri, agar Settings tidak perlu diizinkan saat terkunci. -->
+        <activity
+            android:name=".WifiActivity"
+            android:exported="false"
+            android:lockTaskMode="if_whitelisted"
+            android:excludeFromRecents="true"
+            android:showWhenLocked="true"
+            android:theme="@android:style/Theme.DeviceDefault.NoActionBar"/>
 
         <receiver
             android:name=".BootReceiver"

@@ -98,6 +98,19 @@ top_activity() {
 }
 lock_activity_on_top() { contains "$(top_activity)" "$PKG/\.LockActivity"; }
 lock_activity_gone() { ! lock_activity_on_top; }
+wifi_activity_on_top() { contains "$(top_activity)" "$PKG/\.WifiActivity"; }
+settings_on_top() { contains "$(top_activity)" "com\.android\.settings/"; }
+
+# tap_id <resource-id>: ketuk elemen UI berdasarkan resource-id (lewat uiautomator dump).
+tap_id() {
+    local xml bounds x1 y1 x2 y2
+    xml="$(ash 'uiautomator dump /sdcard/kiosk_ui.xml >/dev/null && cat /sdcard/kiosk_ui.xml')"
+    bounds="$(grep -oE "resource-id=\"$1\"[^>]*bounds=\"\[[0-9]+,[0-9]+\]\[[0-9]+,[0-9]+\]\"" <<<"$xml" \
+        | grep -oE '\[[0-9]+,[0-9]+\]\[[0-9]+,[0-9]+\]' | head -n1 || true)"
+    [[ -n "$bounds" ]] || return 1
+    read -r x1 y1 x2 y2 <<<"$(tr -c '0-9' ' ' <<<"$bounds")"
+    ash input tap $(( (x1 + x2) / 2 )) $(( (y1 + y2) / 2 ))
+}
 
 lock_task_state() { # LOCKED / NONE / PINNED / "" (tidak terbaca)
     ash dumpsys activity | grep -m1 -oE 'mLockTaskModeState=[A-Z]+' | cut -d= -f2 || true
@@ -163,13 +176,35 @@ if lock_activity_on_top; then pass "Membuka HOME diarahkan ke layar kunci"; else
 # Coba buka aplikasi lain yang TIDAK ada di daftar izin lock task.
 other="$(ash cmd package query-activities --brief -a android.intent.action.MAIN \
     -c android.intent.category.LAUNCHER | grep '/' \
-    | grep -vE "^($PKG|com.android.settings|com.android.phone)/" | head -n1 || true)"
+    | grep -vE "^($PKG|com.android.phone)/" | head -n1 || true)"
 if [[ -z "$other" ]]; then
     skip "Tidak ada aplikasi launcher lain untuk dicoba"
 else
     ash am start -n "$other" >/dev/null || true; sleep 2
     if lock_activity_on_top; then pass "Aplikasi lain ($other) tidak bisa dibuka"
     else fail "Aplikasi lain ($other) tidak bisa dibuka"; fi
+fi
+# Settings sengaja TIDAK diizinkan saat terkunci (celah lama lewat panel Wi-Fi).
+ash am start -a android.settings.SETTINGS >/dev/null || true; sleep 2
+if ! settings_on_top && lock_activity_on_top; then pass "Settings tidak bisa dibuka"
+else fail "Settings tidak bisa dibuka"; ash input keyevent KEYCODE_BACK; fi
+ash am start -a android.settings.panel.action.WIFI >/dev/null || true; sleep 2
+if ! settings_on_top && lock_activity_on_top; then pass "Panel Wi-Fi bawaan (Settings) tidak bisa dibuka"
+else fail "Panel Wi-Fi bawaan (Settings) tidak bisa dibuka"; ash input keyevent KEYCODE_BACK; fi
+
+log "Tes 4b: layar Wi-Fi milik KioskLock"
+if ! tap_id "$PKG:id/btn_wifi"; then
+    skip "Tombol Wi-Fi tidak ditemukan lewat uiautomator"
+else
+    sleep 2
+    if wait_for 10 wifi_activity_on_top; then pass "Tombol Wi-Fi membuka pemilih Wi-Fi KioskLock"
+    else fail "Tombol Wi-Fi membuka pemilih Wi-Fi KioskLock"; fi
+    ash input keyevent KEYCODE_HOME; sleep 2
+    if wifi_activity_on_top || lock_activity_on_top; then pass "Home dari layar Wi-Fi tidak bisa keluar"
+    else fail "Home dari layar Wi-Fi tidak bisa keluar"; fi
+    ash input keyevent KEYCODE_BACK; sleep 2
+    if wait_for 10 lock_activity_on_top; then pass "Back dari layar Wi-Fi kembali ke layar kunci"
+    else fail "Back dari layar Wi-Fi kembali ke layar kunci"; fi
 fi
 
 log "Tes 5: reboot saat terkunci (tanpa server)"

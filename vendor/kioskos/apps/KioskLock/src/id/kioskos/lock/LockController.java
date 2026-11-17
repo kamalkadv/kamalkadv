@@ -14,9 +14,12 @@ import android.util.Log;
 public final class LockController {
     private static final String TAG = "KioskLock.Controller";
 
-    /** Paket yang boleh jalan saat mode kiosk: aplikasi ini, dialer darurat, panel Wi-Fi. */
+    /**
+     * Paket yang boleh jalan saat mode kiosk: aplikasi ini + dialer darurat.
+     * Settings sengaja TIDAK diizinkan: dari panel Wi-Fi bawaan pengguna bisa masuk ke
+     * Settings lengkap. Wi-Fi dipilih lewat WifiActivity milik KioskLock sendiri.
+     */
     private static final String PKG_PHONE = "com.android.phone";
-    private static final String PKG_SETTINGS = "com.android.settings";
 
     /** Restriksi yang selalu aktif selama perangkat terdaftar. */
     private static final String[] BASE_RESTRICTIONS = {
@@ -102,7 +105,7 @@ public final class LockController {
 
     private void lock() {
         String self = mContext.getPackageName();
-        mDpm.setLockTaskPackages(mAdmin, new String[] {self, PKG_PHONE, PKG_SETTINGS});
+        mDpm.setLockTaskPackages(mAdmin, new String[] {self, PKG_PHONE});
         mDpm.setLockTaskFeatures(mAdmin, DevicePolicyManager.LOCK_TASK_FEATURE_GLOBAL_ACTIONS
                 | DevicePolicyManager.LOCK_TASK_FEATURE_SYSTEM_INFO);
         mDpm.setStatusBarDisabled(mAdmin, true);

@@ -23,7 +23,8 @@ tidak mengganggu `server/devices.json`.
 | 1 | Instalasi | KioskLock ada di `priv-app`, menjadi **Device Owner** otomatis, partisi FRP tersedia |
 | 2 | Daftarkan (tidak dikunci) | Factory reset dari Settings & safe mode diblokir, layar kunci **tidak** muncul |
 | 3 | Kunci | Layar kunci muncul, Lock Task Mode aktif |
-| 4 | Coba kabur | Home, Back, Recents, intent HOME, dan membuka aplikasi lain tidak bisa keluar dari layar kunci |
+| 4 | Coba kabur | Home, Back, Recents, intent HOME, membuka aplikasi lain, **Settings**, dan **panel Wi-Fi bawaan** tidak bisa keluar dari layar kunci |
+| 4b | Layar Wi-Fi | Tombol Wi-Fi membuka pemilih Wi-Fi KioskLock; Home tidak bisa keluar; Back kembali ke layar kunci |
 | 5 | Reboot saat terkunci, **server mati** | Status dibaca dari penyimpanan lokal, tetap terkunci tanpa internet |
 | 6 | Buka kunci | Layar kunci hilang, Lock Task Mode mati |
 | 7 | **Factory reset**, server online | Device Owner terpasang lagi sendiri, perangkat terkunci lagi dari server (cara kerja Knox Guard) |
@@ -70,9 +71,13 @@ Lakukan sekali di emulator dengan jendela, saat perangkat terkunci:
 
 - [ ] Pesan & nomor kontak dari server tampil di layar kunci.
 - [ ] **Panggilan darurat** membuka dialer darurat, dan nomor darurat (112) bisa dipanggil.
-- [ ] **Sambungkan Wi-Fi** membuka panel Wi-Fi, dan bisa memilih jaringan.
-- [ ] Dari panel Wi-Fi, coba tombol "Lainnya"/"Settings": apakah bisa sampai ke menu lain?
-      Catat apa saja yang bisa dibuka (lihat "Celah yang perlu diwaspadai").
+- [ ] **Sambungkan Wi-Fi** membuka layar Wi-Fi KioskLock (bukan Settings). Daftar jaringan
+      muncul dan diurutkan dari sinyal terkuat.
+- [ ] Sambung ke jaringan berkata sandi: kata sandi salah memunculkan pesan gagal, kata sandi
+      benar membuat status "Tersambung ke …" lalu cek status ke server berjalan otomatis.
+- [ ] **Jaringan lain…** bisa menyambung ke SSID tersembunyi.
+- [ ] Jika Wi-Fi mati: tombol **Nyalakan Wi-Fi** muncul dan berfungsi.
+- [ ] Keyboard: tombol pengaturan / mikrofon di keyboard tidak membuka aplikasi lain.
 - [ ] Status bar tidak bisa ditarik turun.
 - [ ] Tombol power: menu power muncul (restart/matikan boleh), tapi tidak ada jalan keluar.
 - [ ] **Cek status** setelah server membuka kunci: layar kunci hilang tanpa restart.
@@ -97,11 +102,13 @@ adb logcat -s 'KioskLock.Provision' 'KioskLock.Controller' 'KioskLock.Store' \
 
 ## Celah yang perlu diwaspadai
 
-- **Settings di daftar izin Lock Task.** Saat terkunci, `com.android.settings` diizinkan
-  supaya panel Wi-Fi bisa dibuka. Dari panel itu pengguna mungkin bisa masuk ke Settings
-  lengkap. Factory reset dan Developer Options tetap diblokir, tapi periksa menu lain
-  (misalnya akun dan aplikasi). Untuk produksi, pertimbangkan layar pilih Wi-Fi buatan
-  sendiri di KioskLock dan hapus Settings dari daftar izin.
+- **Batasan layar Wi-Fi KioskLock.** WPA-Enterprise (EAP) dan WEP tidak didukung, dan
+  Wi-Fi dengan **halaman login** (captive portal, misalnya Wi-Fi hotel/kafe) tidak bisa
+  dipakai, karena halaman loginnya dibuka oleh aplikasi lain yang diblokir saat terkunci.
+  Untuk kasus ini pengguna perlu data seluler atau Wi-Fi rumah biasa.
+- **Keyboard (IME).** Keyboard adalah aplikasi terpisah yang tetap tampil saat terkunci.
+  Aktivitas lain yang dibuka keyboard (pengaturan, input suara) seharusnya diblokir Lock
+  Task, tapi uji dengan keyboard yang benar-benar dipasang di ROM Anda.
 - **ADB di build debug.** Agar tes otomatis jalan, build `userdebug` tidak mematikan ADB
   (`config_block_debugging_on_debuggable_builds=false`). Build `user` untuk produksi
   **selalu** mematikan ADB saat perangkat terdaftar.
