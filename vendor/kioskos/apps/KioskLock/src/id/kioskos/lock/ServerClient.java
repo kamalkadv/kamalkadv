@@ -2,6 +2,7 @@ package id.kioskos.lock;
 
 import android.content.Context;
 import android.net.Uri;
+import android.os.Build;
 import android.util.Base64;
 import android.util.Log;
 
@@ -10,6 +11,7 @@ import org.json.JSONObject;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
@@ -17,8 +19,6 @@ import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Signature;
 import java.security.spec.X509EncodedKeySpec;
-
-import javax.net.ssl.HttpsURLConnection;
 
 /**
  * Mengambil status perangkat dari server.
@@ -54,9 +54,15 @@ public final class ServerClient {
                 .appendQueryParameter("nonce", nonce)
                 .build();
 
-        HttpsURLConnection conn = null;
+        // HTTP polos hanya untuk uji di emulator (build userdebug/eng). Build "user" wajib HTTPS.
+        if (!"https".equals(uri.getScheme()) && !Build.IS_DEBUGGABLE) {
+            Log.e(TAG, "URL server harus HTTPS di build produksi");
+            return null;
+        }
+
+        HttpURLConnection conn = null;
         try {
-            conn = (HttpsURLConnection) new URL(uri.toString()).openConnection();
+            conn = (HttpURLConnection) new URL(uri.toString()).openConnection();
             conn.setConnectTimeout(TIMEOUT_MS);
             conn.setReadTimeout(TIMEOUT_MS);
             conn.setRequestProperty("Accept", "application/json");

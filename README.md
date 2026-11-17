@@ -76,12 +76,16 @@ vendor/kioskos/
         ├── ServerClient.java        # ambil status + verifikasi tanda tangan
         ├── SyncJobService.java      # sinkron berkala
         └── BootReceiver.java
+scripts/                             # otomatisasi build emulator (lihat docs/BUILD.md)
 server/
 ├── server.py                        # server contoh (stdlib + cryptography)
 └── gen_keys.py                      # buat kunci ECDSA penandatangan
 ```
 
 ## Langkah membangun
+
+> **Mulai dari emulator dulu:** ikuti [docs/BUILD.md](docs/BUILD.md). Skrip di
+> `scripts/` mengotomatiskan setup PC, download AOSP, pemasangan KioskOS, dan build.
 
 ### 1. Siapkan AOSP / LineageOS untuk device Anda
 Anda butuh source tree yang bisa di-build untuk device target (device tree,

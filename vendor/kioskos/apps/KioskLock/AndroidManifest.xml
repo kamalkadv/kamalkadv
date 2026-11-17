@@ -16,7 +16,7 @@
         android:persistent="true"
         android:directBootAware="true"
         android:allowBackup="false"
-        android:usesCleartextTraffic="false">
+        android:networkSecurityConfig="@xml/network_security_config">
 
         <!-- Admin (Device Owner) -->
         <receiver
