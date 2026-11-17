@@ -64,8 +64,9 @@ Saat server mengirim `enrolled=false` (mis. cicilan lunas): semua restriksi dica
 tombol dan font mengikuti tema ROM. KioskUpdater tidak punya tampilan; ia bekerja di
 latar belakang.*
 
-1. **Layar kunci:** pesan & kontak dari server, ID perangkat, tombol Cek status, Wi-Fi, dan
-   Panggilan darurat. Tombol Home/Recents disembunyikan oleh Lock Task Mode.
+1. **Layar kunci:** pesan & kontak dari server, ID perangkat, **aplikasi yang diizinkan
+   admin** (mis. WhatsApp, aplikasi bank/e-wallet untuk membayar), tombol Cek status, Wi-Fi,
+   dan Panggilan darurat. Tombol Home selalu kembali ke layar ini; Recents disembunyikan.
 2. **Cek status gagal:** muncul pesan merah jika tidak ada internet.
 3. **Pemilih Wi-Fi** milik KioskLock sendiri (bukan Settings).
 4. **Kata sandi Wi-Fi:** setelah tersambung, status langsung dicek ke server.

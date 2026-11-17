@@ -10,6 +10,12 @@ import android.os.Build;
 import android.os.UserManager;
 import android.util.Log;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 /** Menerapkan kebijakan Device Owner sesuai {@link LockState}. */
 public final class LockController {
     private static final String TAG = "KioskLock.Controller";
@@ -20,6 +26,19 @@ public final class LockController {
      * Settings lengkap. Wi-Fi dipilih lewat WifiActivity milik KioskLock sendiri.
      */
     private static final String PKG_PHONE = "com.android.phone";
+
+    /**
+     * Tidak pernah dimasukkan ke daftar Lock Task walau dikirim server: bisa dipakai untuk keluar
+     * dari kunci, mencabut Device Owner, memasang/menghapus aplikasi, atau mengganti launcher.
+     * Server juga menolak daftar yang sama (server/server.py: DENIED_PACKAGES).
+     */
+    private static final Set<String> DENIED_PACKAGES = new HashSet<>(Arrays.asList(
+            "com.android.settings", "com.android.packageinstaller",
+            "com.google.android.packageinstaller", "com.android.vending", "com.android.shell",
+            "com.android.documentsui", "com.google.android.documentsui", "com.android.launcher3",
+            "com.google.android.apps.nexuslauncher", "com.android.systemui", "com.android.provision",
+            "com.google.android.setupwizard", "com.android.managedprovisioning",
+            "id.kioskos.lock", "id.kioskos.updater"));
 
     /** Restriksi yang selalu aktif selama perangkat terdaftar. */
     private static final String[] BASE_RESTRICTIONS = {
@@ -56,7 +75,7 @@ public final class LockController {
 
     /** Dipanggil saat boot: terapkan status terakhir dari partisi persisten (tanpa internet). */
     public void applyFromStore() {
-        apply(mStore.read());
+        apply(mStore.read(), /* bringToFront= */ true);
     }
 
     /**
@@ -72,10 +91,13 @@ public final class LockController {
         if (!mStore.write(incoming)) {
             Log.e(TAG, "Gagal menyimpan status ke partisi persisten");
         }
-        apply(incoming);
+        // Layar kunci hanya dipaksa ke depan saat BARU dikunci. Jika sudah terkunci, pengguna
+        // mungkin sedang memakai aplikasi yang diizinkan (mis. membayar di aplikasi bank) dan
+        // tidak boleh dilempar balik ke layar kunci setiap sinkron.
+        apply(incoming, /* bringToFront= */ !stored.locked);
     }
 
-    private synchronized void apply(LockState state) {
+    private synchronized void apply(LockState state, boolean bringToFront) {
         if (!mDpm.isDeviceOwnerApp(mContext.getPackageName())) {
             Log.w(TAG, "Belum menjadi device owner, kebijakan tidak diterapkan");
             return;
@@ -97,17 +119,23 @@ public final class LockController {
         }
 
         if (state.locked) {
-            lock();
+            lock(state, bringToFront);
         } else {
             unlock();
         }
     }
 
-    private void lock() {
-        String self = mContext.getPackageName();
-        mDpm.setLockTaskPackages(mAdmin, new String[] {self, PKG_PHONE});
+    private void lock(LockState state, boolean bringToFront) {
+        List<String> packages = new ArrayList<>();
+        packages.add(mContext.getPackageName());
+        packages.add(PKG_PHONE);
+        packages.addAll(launchableAllowedApps(state));
+        mDpm.setLockTaskPackages(mAdmin, packages.toArray(new String[0]));
+        // HOME: tombol Home tampil dan selalu membawa ke layar kunci (LockActivity = HOME),
+        // jadi pengguna bisa kembali dari aplikasi yang diizinkan.
         mDpm.setLockTaskFeatures(mAdmin, DevicePolicyManager.LOCK_TASK_FEATURE_GLOBAL_ACTIONS
-                | DevicePolicyManager.LOCK_TASK_FEATURE_SYSTEM_INFO);
+                | DevicePolicyManager.LOCK_TASK_FEATURE_SYSTEM_INFO
+                | DevicePolicyManager.LOCK_TASK_FEATURE_HOME);
         mDpm.setStatusBarDisabled(mAdmin, true);
 
         // Jadikan LockActivity sebagai HOME permanen, mengalahkan launcher & Setup Wizard.
@@ -118,8 +146,31 @@ public final class LockController {
         mDpm.addPersistentPreferredActivity(mAdmin, home,
                 new ComponentName(mContext, LockActivity.class));
 
-        mContext.startActivity(new Intent(mContext, LockActivity.class)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP));
+        if (bringToFront || !LockActivity.isRunning()) {
+            mContext.startActivity(new Intent(mContext, LockActivity.class)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP));
+        } else {
+            LockActivity.requestRefresh();
+        }
+    }
+
+    /**
+     * Aplikasi yang diizinkan server, tersaring: terpasang, punya ikon launcher, dan tidak ada di
+     * {@link #DENIED_PACKAGES}. Dipakai untuk daftar Lock Task dan ikon di layar kunci.
+     */
+    List<String> launchableAllowedApps(LockState state) {
+        PackageManager pm = mContext.getPackageManager();
+        List<String> out = new ArrayList<>();
+        for (String pkg : state.allowedApps) {
+            if (DENIED_PACKAGES.contains(pkg)) {
+                Log.w(TAG, "Paket ditolak untuk mode kunci: " + pkg);
+            } else if (pm.getLaunchIntentForPackage(pkg) == null) {
+                Log.i(TAG, "Aplikasi diizinkan tapi tidak terpasang: " + pkg);
+            } else {
+                out.add(pkg);
+            }
+        }
+        return out;
     }
 
     private void unlock() {

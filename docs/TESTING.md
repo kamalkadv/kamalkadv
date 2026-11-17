@@ -24,6 +24,7 @@ tidak mengganggu `server/devices.json`.
 | 2 | Daftarkan (tidak dikunci) | Factory reset dari Settings & safe mode diblokir, layar kunci **tidak** muncul |
 | 3 | Kunci | Layar kunci muncul, Lock Task Mode aktif |
 | 4 | Coba kabur | Home, Back, Recents, intent HOME, membuka aplikasi lain, **Settings**, dan **panel Wi-Fi bawaan** tidak bisa keluar dari layar kunci |
+| 4c | Aplikasi yang diizinkan | Aplikasi yang diizinkan admin bisa dibuka; sinkron berkala tidak menarik pengguna keluar dari aplikasi itu; Home kembali ke layar kunci; setelah izin dicabut aplikasi tidak bisa dibuka |
 | 4b | Layar Wi-Fi | Tombol Wi-Fi membuka pemilih Wi-Fi KioskLock; Home tidak bisa keluar; Back kembali ke layar kunci |
 | 5 | Reboot saat terkunci, **server mati** | Status dibaca dari penyimpanan lokal, tetap terkunci tanpa internet |
 | 6 | Buka kunci | Layar kunci hilang, Lock Task Mode mati |
@@ -76,6 +77,10 @@ Lakukan sekali di emulator dengan jendela, saat perangkat terkunci:
 - [ ] Sambung ke jaringan berkata sandi: kata sandi salah memunculkan pesan gagal, kata sandi
       benar membuat status "Tersambung ke …" lalu cek status ke server berjalan otomatis.
 - [ ] **Jaringan lain…** bisa menyambung ke SSID tersembunyi.
+- [ ] Aplikasi yang diizinkan (mis. WhatsApp, aplikasi bank) tampil sebagai ikon dan bisa dipakai
+      sampai selesai, termasuk login/OTP. Catat jika aplikasi itu mencoba membuka aplikasi lain
+      (browser, kamera, pemilih file): itu akan diblokir. Izinkan juga aplikasi tersebut bila
+      memang dibutuhkan.
 - [ ] Jika Wi-Fi mati: tombol **Nyalakan Wi-Fi** muncul dan berfungsi.
 - [ ] Keyboard: tombol pengaturan / mikrofon di keyboard tidak membuka aplikasi lain.
 - [ ] Status bar tidak bisa ditarik turun.

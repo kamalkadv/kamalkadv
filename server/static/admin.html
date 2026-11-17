@@ -92,15 +92,23 @@
   <!-- Dialog kunci -->
   <dialog id="lock-dialog">
     <form method="dialog" id="lock-form">
-      <h2>Kunci perangkat</h2>
+      <h2 id="lock-title">Kunci perangkat</h2>
       <p class="muted" id="lock-serial"></p>
       <label for="lock-message">Pesan di layar kunci</label>
       <textarea id="lock-message" rows="3" maxlength="500" required></textarea>
       <label for="lock-contact">Kontak (telepon/WA)</label>
       <input id="lock-contact" maxlength="100">
+      <fieldset class="apps">
+        <legend>Aplikasi yang tetap bisa dibuka</legend>
+        <div id="lock-apps" class="app-checks"></div>
+        <label for="lock-apps-extra" class="small-label">Paket lain (pisahkan dengan koma)</label>
+        <input id="lock-apps-extra" placeholder="mis. com.contoh.bayar" autocomplete="off" spellcheck="false">
+        <p class="hint">Aplikasi yang tidak terpasang di HP otomatis disembunyikan. Settings, Play Store, dan
+          pemasang aplikasi tidak bisa diizinkan.</p>
+      </fieldset>
       <div class="dialog-actions">
         <button value="cancel" formnovalidate class="ghost">Batal</button>
-        <button value="ok" class="danger">Kunci</button>
+        <button value="ok" class="danger" id="lock-ok">Kunci</button>
       </div>
     </form>
   </dialog>

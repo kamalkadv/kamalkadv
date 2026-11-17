@@ -51,6 +51,26 @@
         android:textColor="#888888"
         android:textSize="13sp"/>
 
+    <!-- Aplikasi yang tetap boleh dibuka saat terkunci (diatur dari dashboard). -->
+    <TextView
+        android:id="@+id/apps_label"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:gravity="center"
+        android:text="@string/apps_label"
+        android:textColor="#AAAAAA"
+        android:textSize="13sp"
+        android:visibility="gone"/>
+
+    <GridLayout
+        android:id="@+id/app_grid"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:columnCount="4"
+        android:visibility="gone"/>
+
     <TextView
         android:id="@+id/status"
         android:layout_width="match_parent"

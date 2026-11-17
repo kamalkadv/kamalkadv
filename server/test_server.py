@@ -169,6 +169,28 @@ class ServerTest(unittest.TestCase):
         self.assertEqual(code, 200)
         self.assertNotIn("x", json.loads(body)["V1"])
 
+    def test_allowed_apps(self):
+        apps = ["com.whatsapp", "id.dana", "com.whatsapp"]
+        self.assertEqual(self.req("PUT", "/admin/api/devices/APP1",
+                                  {"locked": True, "allowed_apps": apps})[0], 200)
+        d = self.signed_get("/api/v1/devices/status?serial=APP1&nonce=n")
+        self.assertEqual(d["allowed_apps"], ["com.whatsapp", "id.dana"])  # duplikat dibuang
+        # Perangkat tanpa daftar -> daftar kosong.
+        self.assertEqual(self.signed_get("/api/v1/devices/status?serial=NOAPPS&nonce=n")["allowed_apps"], [])
+        # Paket berbahaya & format salah ditolak, data lama tidak berubah.
+        for bad in (["com.android.settings"], ["com.android.vending"], ["id.kioskos.lock"],
+                    ["bukan paket"], ["../x"], "com.whatsapp", [1], ["a.b"] * 13):
+            self.assertEqual(self.req("PUT", "/admin/api/devices/APP1", {"allowed_apps": bad})[0], 400, bad)
+        self.assertEqual(self.signed_get("/api/v1/devices/status?serial=APP1&nonce=n")["allowed_apps"],
+                         ["com.whatsapp", "id.dana"])
+        self.assertEqual(self.req("PUT", "/admin/api/devices/APP1", {"allowed_apps": []})[0], 200)
+        self.assertEqual(self.signed_get("/api/v1/devices/status?serial=APP1&nonce=n")["allowed_apps"], [])
+
+    def test_app_presets(self):
+        self.assertEqual(self.req("GET", "/admin/api/app-presets", token=None)[0], 401)
+        apps = json.loads(self.req("GET", "/admin/api/app-presets")[2])["apps"]
+        self.assertIn("com.whatsapp", [a["package"] for a in apps])
+
     # ---------------------------------------------------------- OTA
     def test_release_requires_file_or_url(self):
         body = dict(id="nofile", version="1", device="emu64x", build_utc=1, filename="nofile.zip",

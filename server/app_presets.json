@@ -1,0 +1,12 @@
+{
+  "_catatan": "Daftar aplikasi yang bisa dicentang di dashboard saat mengunci perangkat. Silakan ubah. Pastikan nama paket benar: adb shell pm list packages | grep <nama>. Aplikasi yang tidak terpasang di HP otomatis disembunyikan.",
+  "apps": [
+    {"package": "com.whatsapp", "label": "WhatsApp"},
+    {"package": "id.dana", "label": "DANA"},
+    {"package": "ovo.id", "label": "OVO"},
+    {"package": "com.gojek.app", "label": "Gojek / GoPay"},
+    {"package": "com.bca", "label": "BCA mobile"},
+    {"package": "id.co.bri.brimo", "label": "BRImo"},
+    {"package": "id.bmri.livin", "label": "Livin' by Mandiri"}
+  ]
+}

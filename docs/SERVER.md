@@ -33,7 +33,7 @@ tercatat atas nama admin tersebut di **Log audit**. Untuk mencabut akses, jalank
 
 | Tab | Isi |
 |---|---|
-| **Perangkat** | Ringkasan jumlah (terkunci/aktif/lepas), cari per serial/IMEI/catatan, filter status. Tombol **Kunci** (dengan pesan & kontak yang tampil di HP), **Buka kunci**, **Lepas** (lunas), **Daftarkan perangkat**. Terlihat juga kapan HP terakhir online dan versi build-nya. |
+| **Perangkat** | Ringkasan jumlah (terkunci/aktif/lepas), cari per serial/IMEI/catatan, filter status. Tombol **Kunci** (dengan pesan, kontak, dan **aplikasi yang tetap bisa dibuka**), **Ubah** (untuk perangkat yang sedang terkunci), **Buka kunci**, **Lepas** (lunas), **Daftarkan perangkat**. Terlihat juga kapan HP terakhir online dan versi build-nya. |
 | **Rilis OTA** | Daftar rilis, **rollout %** untuk peluncuran bertahap, dan tombol **Jeda/Lanjutkan**. |
 | **Log audit** | Siapa mengubah apa, kapan, dan dari IP mana. |
 
@@ -41,6 +41,24 @@ Di HP, tabel tampil sebagai kartu sehingga dashboard bisa dipakai petugas lapang
 
 Perubahan status berlaku saat HP sinkron berikutnya, maksimal sekitar 15 menit, atau langsung
 jika pengguna menekan **Cek status** di layar kunci.
+
+## Aplikasi yang diizinkan saat terkunci
+
+Saat mengunci atau mengubah perangkat, admin bisa mencentang aplikasi yang tetap bisa dibuka,
+misalnya WhatsApp untuk menghubungi kantor atau aplikasi bank/e-wallet untuk membayar. Bisa
+juga mengetik nama paket lain. Maksimal 12 aplikasi per perangkat.
+
+- Daftar centang diambil dari `server/app_presets.json`. Ubah sesuai kebutuhan dan pastikan
+  nama paketnya benar (`adb shell pm list packages | grep <nama>`).
+- Aplikasi yang tidak terpasang di HP otomatis tidak ditampilkan.
+- **Tidak bisa diizinkan:** Settings, Play Store, pemasang aplikasi, pengelola file, launcher,
+  SystemUI, setup wizard, dan aplikasi KioskOS sendiri. Daftar ini diblokir di server
+  (`DENIED_PACKAGES`) **dan** di HP (`LockController`). Jadi walau server dibobol atau admin
+  salah ketik, HP tetap menolaknya.
+- Daftar ikut tersimpan di partisi FRP, jadi tetap berlaku setelah factory reset.
+- Aplikasi yang diizinkan hanya bisa membuka aplikasinya sendiri. Jika aplikasi itu mencoba
+  membuka aplikasi lain (browser, kamera, pemilih file), Android memblokirnya selama terkunci.
+  Uji alur pembayaran tiap aplikasi bank sebelum dipakai.
 
 ## Endpoint
 
@@ -53,7 +71,7 @@ dari request, sehingga tidak bisa dipalsukan atau diputar ulang.
 | GET | `/api/v1/ota/check?serial&device&fingerprint&build_utc&channel&nonce` | KioskUpdater |
 | GET/HEAD | `/ota/<file>.zip` (mendukung `Range`) | update_engine |
 | GET | `/admin/` | Dashboard |
-| GET | `/admin/api/whoami`, `/admin/api/devices`, `/admin/api/releases`, `/admin/api/audit` | Admin |
+| GET | `/admin/api/whoami`, `/admin/api/devices`, `/admin/api/releases`, `/admin/api/audit`, `/admin/api/app-presets` | Admin |
 | PUT / DELETE | `/admin/api/devices/<serial>` | Admin: ubah / lepas perangkat |
 | POST | `/admin/api/releases` | Admin: daftarkan rilis (`31-publish-release.sh`) |
 | PATCH | `/admin/api/releases/<id>` | Admin: `rollout`, `paused`, `channel` |

@@ -81,8 +81,11 @@ cleanup() {
 trap cleanup EXIT
 
 admin() { # admin <METHOD> <json>
-    curl -sf -X "$1" -H "Authorization: Bearer $TOKEN" ${2:+-d "$2"} \
-        "http://127.0.0.1:$PORT/admin/devices/$SERIAL" >/dev/null
+    local out
+    if ! out="$(curl -sS --fail-with-body -X "$1" -H "Authorization: Bearer $TOKEN" ${2:+-d "$2"} \
+            "http://127.0.0.1:$PORT/admin/devices/$SERIAL" 2>&1)"; then
+        die "Server uji menolak '$1 ${2:-}': $out"
+    fi
 }
 
 # ---------------------------------------------------------------- pengecekan perangkat
@@ -176,7 +179,8 @@ if lock_activity_on_top; then pass "Membuka HOME diarahkan ke layar kunci"; else
 # Coba buka aplikasi lain yang TIDAK ada di daftar izin lock task.
 other="$(ash cmd package query-activities --brief -a android.intent.action.MAIN \
     -c android.intent.category.LAUNCHER | grep '/' \
-    | grep -vE "^($PKG|com.android.phone)/" | head -n1 || true)"
+    | grep -vE "^($PKG|id.kioskos.updater|com.android.phone|com.android.settings|com.android.vending|com.android.documentsui|com.google.android.documentsui|com.android.launcher3)/" \
+    | head -n1 || true)"
 if [[ -z "$other" ]]; then
     skip "Tidak ada aplikasi launcher lain untuk dicoba"
 else
@@ -205,6 +209,32 @@ else
     ash input keyevent KEYCODE_BACK; sleep 2
     if wait_for 10 lock_activity_on_top; then pass "Back dari layar Wi-Fi kembali ke layar kunci"
     else fail "Back dari layar Wi-Fi kembali ke layar kunci"; fi
+fi
+
+log "Tes 4c: aplikasi yang diizinkan saat terkunci"
+if [[ -z "$other" ]]; then
+    skip "Tidak ada aplikasi launcher lain untuk dijadikan aplikasi yang diizinkan"
+else
+    other_pkg="${other%%/*}"
+    other_on_top() { contains "$(top_activity)" "$other_pkg/"; }
+    admin PUT "{\"allowed_apps\":[\"$other_pkg\"]}"
+    force_sync; sleep 3
+    if lock_activity_on_top; then pass "Sinkron saat terkunci tidak memaksa layar ulang"
+    else fail "Sinkron saat terkunci tidak memaksa layar ulang"; fi
+    ash am start -n "$other" >/dev/null || true
+    if wait_for 15 other_on_top; then pass "Aplikasi yang diizinkan ($other_pkg) bisa dibuka"
+    else fail "Aplikasi yang diizinkan ($other_pkg) bisa dibuka"; fi
+    force_sync; sleep 3
+    if other_on_top; then pass "Sinkron berkala tidak menarik pengguna keluar dari aplikasi"
+    else fail "Sinkron berkala tidak menarik pengguna keluar dari aplikasi"; fi
+    ash input keyevent KEYCODE_HOME
+    if wait_for 10 lock_activity_on_top; then pass "Home dari aplikasi itu kembali ke layar kunci"
+    else fail "Home dari aplikasi itu kembali ke layar kunci"; fi
+    admin PUT '{"allowed_apps":[]}'
+    force_sync; sleep 3
+    ash am start -n "$other" >/dev/null || true; sleep 2
+    if lock_activity_on_top; then pass "Setelah izin dicabut, aplikasi itu tidak bisa dibuka lagi"
+    else fail "Setelah izin dicabut, aplikasi itu tidak bisa dibuka lagi"; fi
 fi
 
 log "Tes 5: reboot saat terkunci (tanpa server)"

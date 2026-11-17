@@ -17,12 +17,14 @@ Dashboard admin:  GET /admin/
 API admin (header "Authorization: Bearer <token>"):
   GET    /admin/api/whoami
   GET    /admin/api/devices
-  PUT    /admin/api/devices/<serial>      {"enrolled","locked","message","contact","note"}
+  PUT    /admin/api/devices/<serial>      {"enrolled","locked","message","contact","note",
+                                           "allowed_apps": ["com.whatsapp", ...]}
   DELETE /admin/api/devices/<serial>      lepas perangkat (lunas)
   GET    /admin/api/releases
   POST   /admin/api/releases              metadata rilis OTA (lihat scripts/31-publish-release.sh)
   PATCH  /admin/api/releases/<id>         {"rollout","paused","channel"}
   GET    /admin/api/audit?limit=200
+  GET    /admin/api/app-presets           daftar aplikasi siap pilih (app_presets.json)
   (alias lama: PUT/DELETE /admin/devices/<serial>, GET /admin/devices)
 
 Konfigurasi (environment):
@@ -65,6 +67,20 @@ SERIAL_RE = re.compile(r"^[A-Za-z0-9._-]{1,64}$")
 RELEASE_ID_RE = re.compile(r"^[A-Za-z0-9._-]{1,128}$")
 OTA_FILE_RE = re.compile(r"^[A-Za-z0-9._-]{1,200}\.zip$")
 MAX_BODY = 64 * 1024
+APP_PRESETS_PATH = os.environ.get("APP_PRESETS_PATH", os.path.join(HERE, "app_presets.json"))
+
+# Aplikasi yang boleh dibuka saat perangkat terkunci (per perangkat).
+PACKAGE_RE = re.compile(r"^[A-Za-z][A-Za-z0-9_]*(\.[A-Za-z0-9_]+)+$")
+MAX_ALLOWED_APPS = 12
+# Tidak pernah boleh diizinkan: bisa dipakai untuk keluar dari kunci, mencabut Device Owner,
+# memasang/menghapus aplikasi, atau mengganti launcher. KioskLock memblokir daftar yang sama.
+DENIED_PACKAGES = {
+    "com.android.settings", "com.android.packageinstaller", "com.google.android.packageinstaller",
+    "com.android.vending", "com.android.shell", "com.android.documentsui",
+    "com.google.android.documentsui", "com.android.launcher3", "com.google.android.apps.nexuslauncher",
+    "com.android.systemui", "com.android.provision", "com.google.android.setupwizard",
+    "com.android.managedprovisioning", "id.kioskos.lock", "id.kioskos.updater",
+}
 
 _lock = threading.Lock()
 
@@ -144,6 +160,15 @@ def admin_for(auth_header):
         if hmac.compare_digest(known, digest):
             return name
     return None
+
+
+def load_app_presets():
+    try:
+        apps = _load(APP_PRESETS_PATH, {}).get("apps", [])
+    except (OSError, ValueError):
+        return []
+    return [a for a in apps if isinstance(a, dict) and PACKAGE_RE.match(str(a.get("package", "")))
+            and a["package"] not in DENIED_PACKAGES]
 
 
 # ------------------------------------------------------------------ logika OTA
@@ -249,6 +274,8 @@ class Handler(BaseHTTPRequestHandler):
             return self._admin() and self.list_devices()
         if p == "/admin/api/releases":
             return self._admin() and self.list_releases()
+        if p == "/admin/api/app-presets":
+            return self._admin() and self._send(200, {"apps": load_app_presets()})
         if p == "/admin/api/audit":
             if not self._admin():
                 return
@@ -319,6 +346,7 @@ class Handler(BaseHTTPRequestHandler):
             "locked": bool(dev.get("locked", False)),
             "message": dev.get("message", ""),
             "contact": dev.get("contact", ""),
+            "allowed_apps": list(dev.get("allowed_apps", [])),
             "issued_at": int(time.time()),
         }, signed=True)
 
@@ -440,6 +468,19 @@ class Handler(BaseHTTPRequestHandler):
                 if not isinstance(data[k], str) or len(data[k]) > limit:
                     return self._error(400, f"{k} harus teks maks. {limit} karakter")
                 changes[k] = data[k]
+        if "allowed_apps" in data:
+            apps = data["allowed_apps"]
+            if not isinstance(apps, list) or len(apps) > MAX_ALLOWED_APPS:
+                return self._error(400, f"allowed_apps harus daftar maks. {MAX_ALLOWED_APPS} paket")
+            clean = []
+            for pkg in apps:
+                if not isinstance(pkg, str) or len(pkg) > 150 or not PACKAGE_RE.match(pkg):
+                    return self._error(400, f"nama paket tidak valid: {str(pkg)[:60]}")
+                if pkg in DENIED_PACKAGES:
+                    return self._error(400, f"{pkg} tidak boleh diizinkan saat terkunci")
+                if pkg not in clean:
+                    clean.append(pkg)
+            changes["allowed_apps"] = clean
         with _lock:
             devices = _load(DEVICES_PATH, {})
             dev = devices.get(serial, {"created_at": int(time.time())})

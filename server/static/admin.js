@@ -122,6 +122,7 @@ async function start() {
   try {
     const me = await api("GET", "/admin/api/whoami");
     $("whoami").textContent = "Masuk sebagai " + me.admin;
+    await loadAppPresets();
     $("login").hidden = true;
     $("app").hidden = false;
     selectTab(location.hash.slice(1) || "devices");
@@ -157,6 +158,15 @@ for (const b of document.querySelectorAll(".tabs button")) {
 
 // ------------------------------------------------------------ perangkat
 let devices = [];
+let appPresets = [];   // [{package, label}] dari server/app_presets.json
+
+async function loadAppPresets() {
+  try { appPresets = (await api("GET", "/admin/api/app-presets")).apps || []; } catch (e) { appPresets = []; }
+}
+function appLabel(pkg) {
+  const p = appPresets.find((a) => a.package === pkg);
+  return p ? p.label : pkg;
+}
 
 function deviceStatus(d) {
   if (!d.enrolled) return "released";
@@ -200,6 +210,7 @@ function deviceRow(d) {
   const actions = el("div", { class: "actions" });
   if (st === "locked") {
     actions.append(el("button", { class: "small", onclick: () => unlock(d) }, "Buka kunci"));
+    actions.append(el("button", { class: "small", onclick: () => openLock(d) }, "Ubah"));
   } else {
     actions.append(el("button", { class: "small danger", onclick: () => openLock(d) }, "Kunci"));
   }
@@ -214,6 +225,8 @@ function deviceRow(d) {
     el("td", {},
       d.locked && d.message ? el("div", {}, d.message) : null,
       d.locked && d.contact ? el("div", { class: "sub" }, "Kontak: " + d.contact) : null,
+      d.locked && (d.allowed_apps || []).length
+        ? el("div", { class: "sub" }, "Aplikasi diizinkan: " + d.allowed_apps.map(appLabel).join(", ")) : null,
       d.note ? el("div", { class: "sub" }, "Catatan: " + d.note) : null,
       d.updated_by ? el("div", { class: "sub" }, "Diubah " + relTime(d.updated_at) + " oleh " + d.updated_by) : null),
     el("td", { title: fmtDate(d.last_seen) }, relTime(d.last_seen)),
@@ -227,7 +240,14 @@ $("status-filter").addEventListener("change", renderDevices);
 let lockTarget = null;
 function openLock(d) {
   lockTarget = d;
+  const editing = deviceStatus(d) === "locked";
+  $("lock-title").textContent = editing ? "Ubah layar kunci" : "Kunci perangkat";
+  $("lock-ok").textContent = editing ? "Simpan" : "Kunci";
   $("lock-serial").textContent = "Serial: " + d.serial;
+  const current = d.allowed_apps || [];
+  $("lock-apps").replaceChildren(...appPresets.map((a) => el("label", {},
+    el("input", { type: "checkbox", value: a.package, checked: current.includes(a.package) }), a.label)));
+  $("lock-apps-extra").value = current.filter((p) => !appPresets.some((a) => a.package === p)).join(", ");
   $("lock-message").value = d.message || "Cicilan Anda belum dibayar. Silakan hubungi kami untuk membuka kunci.";
   $("lock-contact").value = d.contact || "";
   $("lock-dialog").returnValue = "";
@@ -237,11 +257,14 @@ $("lock-dialog").addEventListener("close", () => {
   if ($("lock-dialog").returnValue !== "ok" || !lockTarget) return;
   const d = lockTarget;
   run(async () => {
+    const apps = [...$("lock-apps").querySelectorAll("input:checked")].map((c) => c.value)
+      .concat($("lock-apps-extra").value.split(",").map((s) => s.trim()).filter(Boolean));
     await api("PUT", "/admin/api/devices/" + encodeURIComponent(d.serial), {
       locked: true, message: $("lock-message").value.trim(), contact: $("lock-contact").value.trim(),
+      allowed_apps: apps,
     });
     await loadDevices();
-  }, "Perangkat " + d.serial + " dikunci. Berlaku saat perangkat sinkron berikutnya (maks. ~15 menit).");
+  }, "Perangkat " + d.serial + " diperbarui. Berlaku saat perangkat sinkron berikutnya (maks. ~15 menit).");
 });
 
 function unlock(d) {
