@@ -36,6 +36,20 @@ if [[ ! -s "$PUBKEY_FILE" ]]; then
 fi
 PUBKEY="$(tr -d '\n' < "$PUBKEY_FILE")"
 
+log "Kunci tanda tangan OS"
+SIGNING_MK=""
+if [[ -f "$KEYS_DIR/releasekey.pk8" ]]; then
+    KEYS_REL="$(realpath --relative-to="$AOSP_DIR" "$KEYS_DIR")"
+    [[ "$KEYS_REL" != ..* ]] \
+        || die "KEYS_DIR ($KEYS_DIR) harus berada di dalam $AOSP_DIR agar bisa dipakai build."
+    # certificate: "platform" / "shared" / "media" dicari di folder yang sama dengan releasekey.
+    SIGNING_MK="PRODUCT_DEFAULT_DEV_CERTIFICATE := $KEYS_REL/releasekey"
+    echo "    Memakai kunci sendiri: $KEYS_REL"
+else
+    warn "Belum ada kunci sendiri; build memakai test-keys AOSP (publik, JANGAN untuk produksi)."
+    echo "    Buat dengan: ./scripts/10-gen-keys.sh"
+fi
+
 log "Buat produk $PRODUCT"
 mkdir -p "$DEST/products" \
          "$DEST/emu_overlay/vendor/kioskos/apps/KioskLock/res/values"
@@ -58,6 +72,9 @@ PRODUCT_PACKAGE_OVERLAYS += vendor/kioskos/emu_overlay
 PRODUCT_ARTIFACT_PATH_REQUIREMENT_ALLOWED_LIST += \\
     system_ext/priv-app/KioskLock/% \\
     system_ext/etc/permissions/privapp-permissions-kiosklock.xml
+
+# Kunci tanda tangan (kosong = test-keys AOSP).
+$SIGNING_MK
 
 PRODUCT_NAME := $PRODUCT
 PRODUCT_BRAND := KioskOS

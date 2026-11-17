@@ -3,3 +3,10 @@ server/devices.json
 server/devices.json.tmp
 __pycache__/
 server/public_key.b64
+
+# Kunci tanda tangan TIDAK BOLEH masuk git
+*.pk8
+*.x509.pem
+avb*.pem
+avb_pkmd.bin
+keys/

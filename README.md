@@ -86,6 +86,7 @@ server/
 
 > **Mulai dari emulator dulu:** ikuti [docs/BUILD.md](docs/BUILD.md). Skrip di
 > `scripts/` mengotomatiskan setup PC, download AOSP, pemasangan KioskOS, dan build.
+> Kunci tanda tangan sendiri (release keys + AVB): [docs/SIGNING.md](docs/SIGNING.md).
 
 ### 1. Siapkan AOSP / LineageOS untuk device Anda
 Anda butuh source tree yang bisa di-build untuk device target (device tree,

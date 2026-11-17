@@ -37,11 +37,15 @@ AOSP_BRANCH=android-15.0.0_r36 ./scripts/01-sync-aosp.sh   # versi Android terte
 RELEASE=trunk_staging ./scripts/03-build-emulator.sh       # jika deteksi otomatis gagal
 ```
 
+> **Kunci sendiri:** sebelum build yang serius, jalankan `./scripts/10-gen-keys.sh`
+> agar ROM tidak ditandatangani test-keys AOSP yang publik. Lihat [SIGNING.md](SIGNING.md).
+
 ### Apa yang dilakukan skrip 02
 
 1. Menyalin `vendor/kioskos/` ke `$AOSP_DIR/vendor/kioskos/`.
-2. Membuat kunci server uji (`server/private_key.pem`, tidak ikut di-commit).
-3. Membuat produk `kiosk_emu` = emulator standar AOSP (`sdk_phone64_x86_64`) + KioskOS,
+2. Memakai kunci tanda tangan sendiri jika sudah dibuat dengan `10-gen-keys.sh`.
+3. Membuat kunci server uji (`server/private_key.pem`, tidak ikut di-commit).
+4. Membuat produk `kiosk_emu` = emulator standar AOSP (`sdk_phone64_x86_64`) + KioskOS,
    dengan KioskLock diarahkan ke `http://10.0.2.2:8080`, yaitu server di PC Anda
    dilihat dari dalam emulator.
 
