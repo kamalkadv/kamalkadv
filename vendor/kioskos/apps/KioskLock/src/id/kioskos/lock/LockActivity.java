@@ -11,13 +11,14 @@ import android.text.TextUtils.TruncateAt;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
-import android.widget.Button;
 import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.lang.ref.WeakReference;
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -34,7 +35,10 @@ public class LockActivity extends Activity {
     private TextView mMessage;
     private TextView mContact;
     private TextView mStatus;
-    private Button mCheck;
+    private View mStatusProgress;
+    private View mCheck;
+    private View mContactRow;
+    private TextView mLastChecked;
     private TextView mAppsLabel;
     private GridLayout mAppGrid;
 
@@ -59,9 +63,11 @@ public class LockActivity extends Activity {
         mMessage = findViewById(R.id.message);
         mContact = findViewById(R.id.contact);
         mStatus = findViewById(R.id.status);
+        mStatusProgress = findViewById(R.id.status_progress);
         mCheck = findViewById(R.id.btn_check);
-        ((TextView) findViewById(R.id.device_id)).setText(
-                getString(R.string.device_id_label, DeviceIdentity.serial()));
+        mContactRow = findViewById(R.id.contact_row);
+        mLastChecked = findViewById(R.id.last_checked);
+        ((TextView) findViewById(R.id.device_id)).setText(DeviceIdentity.serial());
 
         mCheck.setOnClickListener(v -> checkNow());
         findViewById(R.id.btn_emergency).setOnClickListener(v -> {
@@ -142,7 +148,16 @@ public class LockActivity extends Activity {
         }
         if (!TextUtils.isEmpty(state.message)) mMessage.setText(state.message);
         mContact.setText(state.contact);
-        mContact.setVisibility(TextUtils.isEmpty(state.contact) ? View.GONE : View.VISIBLE);
+        mContactRow.setVisibility(TextUtils.isEmpty(state.contact) ? View.GONE : View.VISIBLE);
+        // Kapan status ini terakhir dikonfirmasi server (bukan jam lokal saat ini).
+        if (state.issuedAt > 0) {
+            String when = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
+                    .format(new Date(state.issuedAt * 1000));
+            mLastChecked.setText(getString(R.string.last_checked, when));
+            mLastChecked.setVisibility(View.VISIBLE);
+        } else {
+            mLastChecked.setVisibility(View.GONE);
+        }
         showAllowedApps(LockController.get(this).launchableAllowedApps(state));
     }
 
@@ -166,17 +181,17 @@ public class LockActivity extends Activity {
             LinearLayout cell = new LinearLayout(this);
             cell.setOrientation(LinearLayout.VERTICAL);
             cell.setGravity(Gravity.CENTER_HORIZONTAL);
-            cell.setPadding((int) (6 * dp), (int) (8 * dp), (int) (6 * dp), (int) (8 * dp));
-            cell.setBackgroundResource(android.R.drawable.list_selector_background);
+            cell.setPadding((int) (4 * dp), (int) (6 * dp), (int) (4 * dp), (int) (4 * dp));
+            cell.setBackgroundResource(R.drawable.bg_cell);
             cell.setContentDescription(label);
 
             ImageView iv = new ImageView(this);
             iv.setImageDrawable(icon);
-            cell.addView(iv, new LinearLayout.LayoutParams((int) (48 * dp), (int) (48 * dp)));
+            cell.addView(iv, new LinearLayout.LayoutParams((int) (44 * dp), (int) (44 * dp)));
 
             TextView tv = new TextView(this);
             tv.setText(label);
-            tv.setTextColor(0xFFDDDDDD);
+            tv.setTextColor(getColor(R.color.kiosk_on_surface_variant));
             tv.setTextSize(12);
             tv.setGravity(Gravity.CENTER);
             tv.setMaxLines(2);
@@ -204,15 +219,23 @@ public class LockActivity extends Activity {
     }
 
     private void checkNow() {
-        mCheck.setEnabled(false);
+        setChecking(true);
+        mStatus.setTextColor(getColor(R.color.kiosk_accent));
         mStatus.setText(R.string.checking);
         new Thread(() -> {
             boolean ok = SyncJobService.syncBlocking(getApplicationContext());
             runOnUiThread(() -> {
-                mCheck.setEnabled(true);
+                setChecking(false);
+                mStatus.setTextColor(getColor(R.color.kiosk_danger));
                 mStatus.setText(ok ? "" : getString(R.string.check_failed));
                 if (!isFinishing()) refresh();
             });
         }, "KioskLockCheck").start();
+    }
+
+    private void setChecking(boolean checking) {
+        mCheck.setEnabled(!checking);
+        mCheck.setAlpha(checking ? 0.6f : 1f);
+        mStatusProgress.setVisibility(checking ? View.VISIBLE : View.GONE);
     }
 }

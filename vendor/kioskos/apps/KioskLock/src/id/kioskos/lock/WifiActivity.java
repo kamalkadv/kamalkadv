@@ -19,6 +19,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -292,7 +293,7 @@ public class WifiActivity extends Activity {
         private String mCurrent;
 
         NetworkAdapter(Context context) {
-            super(context, android.R.layout.simple_list_item_2, android.R.id.text1);
+            super(context, R.layout.item_wifi, R.id.wifi_ssid);
         }
 
         void setCurrentSsid(String ssid) {
@@ -309,14 +310,27 @@ public class WifiActivity extends Activity {
             View v = super.getView(position, convertView, parent);
             Network n = getItem(position);
             Context c = getContext();
-            ((TextView) v.findViewById(android.R.id.text1)).setText(n.ssid);
-            String signal = c.getString(signalLabel(n.rssi));
-            String sec = c.getString(n.security == Security.OPEN
-                    ? R.string.wifi_open : n.security == Security.UNSUPPORTED
-                    ? R.string.wifi_unsupported_short : R.string.wifi_secured);
-            String line2 = signal + " · " + sec;
-            if (n.ssid.equals(mCurrent)) line2 = c.getString(R.string.wifi_current) + " · " + line2;
-            ((TextView) v.findViewById(android.R.id.text2)).setText(line2);
+            ((TextView) v.findViewById(R.id.wifi_ssid)).setText(n.ssid);
+            // Berkata sandi ditandai ikon kunci; teks hanya menyebut kasus khusus.
+            String line2 = c.getString(signalLabel(n.rssi));
+            if (n.security == Security.OPEN) {
+                line2 += " · " + c.getString(R.string.wifi_open);
+            } else if (n.security == Security.UNSUPPORTED) {
+                line2 += " · " + c.getString(R.string.wifi_unsupported_short);
+            }
+            boolean current = n.ssid.equals(mCurrent);
+            if (current) line2 = c.getString(R.string.wifi_current) + " · " + line2;
+            TextView detail = v.findViewById(R.id.wifi_detail);
+            detail.setText(line2);
+            detail.setTextColor(c.getColor(current ? R.color.kiosk_accent : R.color.kiosk_muted));
+
+            // Ikon sinyal: makin lemah makin redup; jaringan tak didukung paling redup.
+            ImageView icon = v.findViewById(R.id.wifi_icon);
+            icon.setColorFilter(c.getColor(current ? R.color.kiosk_accent : R.color.kiosk_on_surface));
+            icon.setImageAlpha(n.security == Security.UNSUPPORTED ? 90
+                    : n.rssi >= -55 ? 255 : n.rssi >= -70 ? 200 : 140);
+            v.findViewById(R.id.wifi_lock).setVisibility(
+                    n.security == Security.OPEN ? View.INVISIBLE : View.VISIBLE);
             return v;
         }
 

@@ -60,18 +60,38 @@ Saat server mengirim `enrolled=false` (mis. cicilan lunas): semua restriksi dica
 
 ![Mockup layar KioskLock](docs/images/kiosklock-ui-mockup.png)
 
-*Mockup yang dibuat dari file layout (`res/layout/`), bukan screenshot perangkat. Bentuk
-tombol dan font mengikuti tema ROM. KioskUpdater tidak punya tampilan; ia bekerja di
-latar belakang.*
+*Mockup yang dibuat dari file layout (`res/layout/`), bukan screenshot perangkat. Font
+mengikuti ROM. KioskUpdater tidak punya tampilan; ia bekerja di latar belakang.*
 
-1. **Layar kunci:** pesan & kontak dari server, ID perangkat, **aplikasi yang diizinkan
-   admin** (mis. WhatsApp, aplikasi bank/e-wallet untuk membayar), tombol Cek status, Wi-Fi,
-   dan Panggilan darurat. Tombol Home selalu kembali ke layar ini; Recents disembunyikan.
-2. **Cek status gagal:** muncul pesan merah jika tidak ada internet.
-3. **Pemilih Wi-Fi** milik KioskLock sendiri (bukan Settings).
-4. **Kata sandi Wi-Fi:** setelah tersambung, status langsung dicek ke server.
+1. **Layar kunci:** logo & nama perusahaan, ikon gembok, kartu berisi pesan, kontak, dan
+   ID perangkat, **aplikasi yang diizinkan admin** (mis. WhatsApp, aplikasi bank/e-wallet),
+   tombol utama **Cek status**, tombol **Wi-Fi** dan **Darurat**, serta keterangan kapan
+   status terakhir dikonfirmasi server. Tombol Home selalu kembali ke layar ini.
+2. **Sedang memeriksa:** indikator berputar, tombol dinonaktifkan sementara.
+3. **Gagal terhubung:** pesan merah jika tidak ada internet.
+4. **Pemilih Wi-Fi** milik KioskLock sendiri (bukan Settings).
 
+Dalam kondisi normal (pesan 2–3 baris + 3 aplikasi) semua isi muat tanpa scroll di layar
+360×760 dp. Jika isinya lebih panjang, layar bisa di-scroll sehingga tombol Darurat tetap
+terjangkau.
 
+### Identitas perusahaan
+
+```bash
+BRAND_NAME="PT Contoh Finance" BRAND_LOGO=~/logo-192.png ./scripts/02-install-kioskos.sh
+```
+
+- `BRAND_NAME` mengisi nama di bagian atas layar kunci.
+- `BRAND_LOGO` adalah PNG persegi, misalnya 192×192 px, yang tampil di kotak 18dp.
+- Warna (`kiosk_accent`, `kiosk_bg_top`, dan lain-lain) ada di
+  `vendor/kioskos/apps/KioskLock/res/values/colors.xml` dan bisa di-override lewat overlay
+  dengan nama yang sama.
+
+> Logo PNG menimpa `brand_logo.xml` (vektor) lewat overlay statis. Pastikan logo tampil
+> setelah build pertama. Jika build menolak dua resource `brand_logo` dengan tipe file
+> berbeda, hapus `res/drawable/brand_logo.xml` di repo dan taruh PNG default di sana.
+
+## Struktur repo
 
 ```
 vendor/kioskos/

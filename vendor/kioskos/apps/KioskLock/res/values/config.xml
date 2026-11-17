@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Nama perusahaan di layar kunci. Logo: drawable/brand_logo. Ganti lewat overlay produk. -->
+    <string name="config_brand_name" translatable="false">KioskOS</string>
+
     <!-- Bisa di-override per produk dengan overlay (PRODUCT_PACKAGE_OVERLAYS). -->
 
     <!-- Base URL server lock. Wajib HTTPS. -->

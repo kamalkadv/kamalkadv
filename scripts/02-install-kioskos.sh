@@ -98,4 +98,27 @@ for app in KioskLock KioskUpdater; do
 XML
 done
 
+# Identitas perusahaan di layar kunci.
+BRAND_DIR="$DEST/emu_overlay/vendor/kioskos/apps/KioskLock/res"
+rm -f "$BRAND_DIR/values/brand.xml" "$BRAND_DIR/drawable/brand_logo.png"
+if [[ -n "$BRAND_NAME" ]]; then
+    # Escape ala string resource Android: \ " ' dan @/? di awal, lalu &<> untuk XML.
+    name_xml="$(python3 "$REPO_ROOT/scripts/tools/android_string.py" "$BRAND_NAME")"
+    cat > "$BRAND_DIR/values/brand.xml" <<XML
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dibuat otomatis oleh scripts/02-install-kioskos.sh (BRAND_NAME). -->
+<resources>
+    <string name="config_brand_name" translatable="false">$name_xml</string>
+</resources>
+XML
+    echo "    Nama di layar kunci: $BRAND_NAME"
+fi
+if [[ -n "$BRAND_LOGO" ]]; then
+    [[ -f "$BRAND_LOGO" && "$(head -c 8 "$BRAND_LOGO" | od -An -tx1 | tr -d ' \n')" == 89504e470d0a1a0a ]] \
+        || die "BRAND_LOGO harus file PNG: $BRAND_LOGO"
+    mkdir -p "$BRAND_DIR/drawable"
+    cp "$BRAND_LOGO" "$BRAND_DIR/drawable/brand_logo.png"
+    echo "    Logo di layar kunci: $BRAND_LOGO"
+fi
+
 log "Selesai. Berikutnya: ./scripts/03-build-emulator.sh"

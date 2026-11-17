@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Palet layar kunci. Bisa disesuaikan dengan warna perusahaan lewat overlay. -->
+    <color name="kiosk_bg_top">#FF121A24</color>
+    <color name="kiosk_bg_bottom">#FF0B0F14</color>
+    <color name="kiosk_surface">#FF1B2430</color>
+    <color name="kiosk_surface_high">#FF1F2A37</color>
+    <color name="kiosk_outline">#FF263241</color>
+    <color name="kiosk_outline_strong">#FF3C4A5C</color>
+    <color name="kiosk_on_surface">#FFE8EAED</color>
+    <color name="kiosk_on_surface_variant">#FFDADCE0</color>
+    <color name="kiosk_muted">#FF9AA0A6</color>
+    <color name="kiosk_faint">#FF80868B</color>
+    <color name="kiosk_accent">#FF8AB4F8</color>
+    <color name="kiosk_on_accent">#FF0B1A33</color>
+    <color name="kiosk_danger">#FFF28B82</color>
+    <color name="kiosk_danger_container">#FF3A1E22</color>
+    <color name="kiosk_danger_outline">#FF5C2B2B</color>
+    <color name="kiosk_ripple">#33FFFFFF</color>
+</resources>

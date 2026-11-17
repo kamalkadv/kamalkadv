@@ -3,13 +3,17 @@
     <string name="app_name">Device Lock</string>
     <string name="lock_title">Perangkat Dikunci</string>
     <string name="lock_default_message">Perangkat ini dikunci oleh penyedia. Silakan hubungi kami untuk membuka kunci.</string>
+    <string name="label_contact">Hubungi</string>
+    <string name="label_device_id">ID Perangkat</string>
+    <string name="btn_wifi_short">Wi-Fi</string>
+    <string name="btn_emergency_short">Darurat</string>
+    <string name="last_checked">Terakhir diperiksa: %1$s</string>
     <string name="apps_label">Aplikasi yang bisa dibuka</string>
     <string name="btn_check">Cek status</string>
     <string name="btn_wifi">Sambungkan Wi-Fi</string>
     <string name="btn_emergency">Panggilan darurat</string>
     <string name="checking">Memeriksa status…</string>
-    <string name="check_failed">Gagal terhubung ke server. Pastikan ada koneksi internet.</string>
-    <string name="device_id_label">ID Perangkat: %1$s</string>
+    <string name="check_failed">Gagal terhubung. Periksa koneksi internet.</string>
 
     <!-- Pemilih Wi-Fi -->
     <string name="wifi_title">Wi-Fi</string>

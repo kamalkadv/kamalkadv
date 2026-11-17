@@ -1,104 +1,300 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- ScrollView: di layar kecil, posisi mendatar, huruf besar, atau pesan panjang (maks. 500
-     karakter dari server), semua isi tetap bisa dijangkau, terutama tombol Panggilan darurat.
-     fillViewport + gravity center: jika isi muat, tetap di tengah layar seperti biasa. -->
+<!-- Layar kunci.
+     ScrollView + fillViewport: di layar kecil, posisi mendatar, huruf besar, atau pesan panjang
+     (maks. 500 karakter dari server), semua isi tetap bisa dijangkau, terutama tombol Darurat.
+     Jika isi muat, dua Space berbobot mendorong kartu ke tengah dan tombol ke bawah. -->
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:background="#101418">
+    android:background="@drawable/bg_screen">
 
 <LinearLayout
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:gravity="center"
-    android:padding="32dp">
+    android:paddingStart="24dp"
+    android:paddingEnd="24dp"
+    android:paddingTop="20dp"
+    android:paddingBottom="16dp">
 
-    <TextView
-        android:layout_width="wrap_content"
+    <!-- Identitas perusahaan (logo & nama dari overlay produk) -->
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/lock_title"
-        android:textColor="#FFFFFF"
-        android:textSize="26sp"
-        android:textStyle="bold"/>
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <FrameLayout
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:background="@drawable/bg_logo">
+            <ImageView
+                android:id="@+id/brand_logo"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_gravity="center"
+                android:src="@drawable/brand_logo"
+                android:importantForAccessibility="no"/>
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/brand_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:text="@string/config_brand_name"
+            android:textColor="@color/kiosk_on_surface"
+            android:textSize="15sp"
+            android:fontFamily="sans-serif-medium"/>
+    </LinearLayout>
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:minHeight="16dp"/>
+
+    <!-- Ikon gembok -->
+    <FrameLayout
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_gravity="center_horizontal"
+        android:background="@drawable/bg_badge">
+        <ImageView
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_lock"
+            android:tint="@color/kiosk_danger"
+            android:importantForAccessibility="no"/>
+    </FrameLayout>
 
     <TextView
-        android:id="@+id/message"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:gravity="center"
+        android:text="@string/lock_title"
+        android:textColor="#FFFFFFFF"
+        android:textSize="22sp"
+        android:fontFamily="sans-serif-medium"
+        android:accessibilityHeading="true"/>
+
+    <!-- Kartu: pesan, kontak, ID perangkat -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:gravity="center"
-        android:text="@string/lock_default_message"
-        android:textColor="#DDDDDD"
-        android:textSize="16sp"/>
+        android:orientation="vertical"
+        android:background="@drawable/bg_card"
+        android:showDividers="middle"
+        android:divider="@drawable/divider">
 
-    <TextView
-        android:id="@+id/contact"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:gravity="center"
-        android:textColor="#8AB4F8"
-        android:textSize="16sp"/>
+        <TextView
+            android:id="@+id/message"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="14dp"
+            android:paddingBottom="14dp"
+            android:text="@string/lock_default_message"
+            android:textColor="@color/kiosk_on_surface_variant"
+            android:textSize="15sp"
+            android:lineSpacingExtra="3dp"/>
 
-    <TextView
-        android:id="@+id/device_id"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:gravity="center"
-        android:textColor="#888888"
-        android:textSize="13sp"/>
+        <LinearLayout
+            android:id="@+id/contact_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="9dp"
+            android:paddingBottom="9dp">
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/ic_phone"
+                android:tint="@color/kiosk_accent"
+                android:importantForAccessibility="no"/>
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="14dp"
+                android:orientation="vertical">
+                <TextView
+                    style="@style/KioskInfoLabel"
+                    android:text="@string/label_contact"/>
+                <TextView
+                    android:id="@+id/contact"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/kiosk_accent"
+                    android:textSize="17sp"
+                    android:fontFamily="sans-serif-medium"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="9dp"
+            android:paddingBottom="9dp">
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/ic_badge"
+                android:tint="@color/kiosk_muted"
+                android:importantForAccessibility="no"/>
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="14dp"
+                android:orientation="vertical">
+                <TextView
+                    style="@style/KioskInfoLabel"
+                    android:text="@string/label_device_id"/>
+                <TextView
+                    android:id="@+id/device_id"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#FFBDC1C6"
+                    android:textSize="14sp"
+                    android:fontFamily="monospace"/>
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
 
     <!-- Aplikasi yang tetap boleh dibuka saat terkunci (diatur dari dashboard). -->
     <TextView
         android:id="@+id/apps_label"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:gravity="center"
+        android:layout_marginTop="14dp"
+        android:layout_marginStart="2dp"
         android:text="@string/apps_label"
-        android:textColor="#AAAAAA"
-        android:textSize="13sp"
+        android:textAllCaps="true"
+        android:letterSpacing="0.05"
+        android:textColor="@color/kiosk_muted"
+        android:textSize="12sp"
         android:visibility="gone"/>
 
     <GridLayout
         android:id="@+id/app_grid"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="6dp"
+        android:padding="4dp"
         android:columnCount="4"
+        android:background="@drawable/bg_card"
         android:visibility="gone"/>
 
-    <TextView
-        android:id="@+id/status"
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:minHeight="16dp"/>
+
+    <!-- Status pengecekan -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
+        android:minHeight="20dp"
+        android:orientation="horizontal"
         android:gravity="center"
-        android:textColor="#F28B82"
-        android:textSize="14sp"/>
+        android:accessibilityLiveRegion="polite">
+        <ProgressBar
+            android:id="@+id/status_progress"
+            style="?android:attr/progressBarStyleSmall"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_marginEnd="8dp"
+            android:indeterminateTint="@color/kiosk_accent"
+            android:visibility="gone"/>
+        <TextView
+            android:id="@+id/status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textSize="13sp"
+            android:textColor="@color/kiosk_danger"/>
+    </LinearLayout>
 
-    <Button
+    <!-- Tombol -->
+    <LinearLayout
         android:id="@+id/btn_check"
+        style="@style/KioskButton.Primary"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:text="@string/btn_check"/>
+        android:layout_marginTop="8dp">
+        <ImageView
+            style="@style/KioskButtonIcon"
+            android:src="@drawable/ic_refresh"
+            android:tint="@color/kiosk_on_accent"/>
+        <TextView
+            style="@style/KioskButtonText"
+            android:text="@string/btn_check"
+            android:textColor="@color/kiosk_on_accent"/>
+    </LinearLayout>
 
-    <Button
-        android:id="@+id/btn_wifi"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="@string/btn_wifi"/>
+        android:orientation="horizontal">
 
-    <Button
-        android:id="@+id/btn_emergency"
+        <LinearLayout
+            android:id="@+id/btn_wifi"
+            style="@style/KioskButton.Secondary"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="5dp">
+            <ImageView
+                style="@style/KioskButtonIcon"
+                android:src="@drawable/ic_wifi"
+                android:tint="@color/kiosk_on_surface"/>
+            <TextView
+                style="@style/KioskButtonText"
+                android:text="@string/btn_wifi_short"
+                android:textSize="15sp"
+                android:textColor="@color/kiosk_on_surface"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/btn_emergency"
+            style="@style/KioskButton.Emergency"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_marginStart="5dp"
+            android:contentDescription="@string/btn_emergency">
+            <ImageView
+                style="@style/KioskButtonIcon"
+                android:src="@drawable/ic_phone"
+                android:tint="@color/kiosk_danger"/>
+            <TextView
+                style="@style/KioskButtonText"
+                android:text="@string/btn_emergency_short"
+                android:textSize="15sp"
+                android:textColor="@color/kiosk_danger"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/last_checked"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="@string/btn_emergency"/>
+        android:layout_marginTop="10dp"
+        android:gravity="center"
+        android:textColor="@color/kiosk_faint"
+        android:textSize="12sp"
+        android:visibility="gone"/>
 </LinearLayout>
 </ScrollView>

@@ -29,6 +29,10 @@ KEY_SUBJECT="${KEY_SUBJECT:-/C=ID/ST=Jakarta/L=Jakarta/O=KioskOS/OU=Android/CN=K
 # Default: server di PC dilihat dari emulator. Untuk build "user"/produksi WAJIB https://.
 SERVER_URL="${SERVER_URL:-http://10.0.2.2:8080}"
 
+# Identitas di layar kunci (opsional). BRAND_LOGO: file PNG persegi, mis. 192x192 px.
+BRAND_NAME="${BRAND_NAME:-}"
+BRAND_LOGO="${BRAND_LOGO:-}"
+
 # 1 = tanda tangani saat build dengan KEYS_DIR (cepat, untuk pengujian).
 # 0 = build dengan test-keys, tanda tangani ulang saat rilis (30-release.sh).
 SIGN_AT_BUILD="${SIGN_AT_BUILD:-1}"
