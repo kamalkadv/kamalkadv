@@ -1,6 +1,11 @@
 android_app {
     name: "KioskLock",
-    srcs: ["src/**/*.java"],
+    // src/: kode bersama. src-aosp/: bagian yang butuh API sistem (FRP, setDeviceOwner,
+    // WifiManager.connect). Edisi Device Owner (android-dpc/) memakai src-dpc/ sebagai gantinya.
+    srcs: [
+        "src/**/*.java",
+        "src-aosp/**/*.java",
+    ],
     resource_dirs: ["res"],
     manifest: "AndroidManifest.xml",
     static_libs: ["kioskos-common"],

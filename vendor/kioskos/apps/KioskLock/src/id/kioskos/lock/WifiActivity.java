@@ -36,9 +36,9 @@ import java.util.Map;
  * Panel Wi-Fi bawaan berasal dari com.android.settings, dan dari panel itu pengguna bisa
  * masuk ke Settings lengkap. Dengan layar sendiri, Settings tidak perlu diizinkan sama sekali.
  *
- * Memakai API Wi-Fi lama (WifiConfiguration + WifiManager.connect) yang masih diizinkan
- * untuk aplikasi sistem / Device Owner. Izin NETWORK_SETTINGS (signature, didapat karena
- * ditandatangani kunci platform) membuat pemindaian tidak butuh izin lokasi.
+ * Menyambung lewat {@link WifiConnector}: di ROM AOSP memakai WifiManager.connect (@SystemApi,
+ * izin NETWORK_SETTINGS dari kunci platform, pemindaian tanpa izin lokasi); di edisi Device
+ * Owner memakai addNetwork/enableNetwork yang masih diizinkan untuk Device Owner.
  */
 public class WifiActivity extends Activity {
     private static final String TAG = "KioskLock.Wifi";
@@ -139,7 +139,8 @@ public class WifiActivity extends Activity {
         Map<String, Network> best = new HashMap<>();
         if (results != null) {
             for (ScanResult r : results) {
-                String ssid = r.getWifiSsid() == null ? r.SSID : stripQuotes(r.getWifiSsid().toString());
+                String ssid = android.os.Build.VERSION.SDK_INT >= 33 && r.getWifiSsid() != null
+                        ? stripQuotes(r.getWifiSsid().toString()) : stripQuotes(r.SSID);
                 if (TextUtils.isEmpty(ssid)) continue;
                 Network n = new Network(ssid, Security.from(r.capabilities), r.level);
                 Network old = best.get(ssid);
@@ -228,8 +229,8 @@ public class WifiActivity extends Activity {
                 cfg.preSharedKey = quote(password);
         }
         mStatus.setText(getString(R.string.wifi_connecting, ssid));
-        // @SystemApi, butuh NETWORK_SETTINGS. Menyimpan konfigurasi lalu langsung menyambung.
-        mWifi.connect(cfg, new WifiManager.ActionListener() {
+        // AOSP: WifiManager.connect (@SystemApi). Edisi Device Owner: addNetwork + enableNetwork.
+        WifiConnector.connect(mWifi, cfg, new WifiConnector.Callback() {
             @Override
             public void onSuccess() {
                 Log.i(TAG, "Menyambung ke " + ssid);

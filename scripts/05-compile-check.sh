@@ -31,20 +31,32 @@ fi
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 
-log "Compile kioskos-common + ${APPS[*]%%:*}"
-SOURCES=()
-mapfile -t -O 0 SOURCES < <(find "$VENDOR/libs" -name '*.java')
-for entry in "${APPS[@]}"; do
-    app="${entry%%:*}" pkg="${entry##*:}"
-    r="$WORK/gen/${pkg//.//}/R.java"
-    python3 "$REPO_ROOT/scripts/tools/gen_r.py" "$VENDOR/apps/$app/res" "$r" "$pkg"
-    mapfile -t -O "${#SOURCES[@]}" SOURCES < <(find "$VENDOR/apps/$app/src" -name '*.java')
-    SOURCES+=("$r")
-done
-mkdir -p "$WORK/classes"
-if javac -encoding UTF-8 -Xlint:-deprecation -nowarn \
-        -cp "$JAR" -d "$WORK/classes" "${SOURCES[@]}"; then
-    log "OK: ${#SOURCES[@]} file Java ter-compile tanpa error"
-else
-    die "Compile gagal (lihat error di atas)"
-fi
+# compile_variant <nama> <subfolder-tambahan-KioskLock>
+#   aosp: src/ + src-aosp/ (ROM sendiri)   dpc: src/ + src-dpc/ (edisi Device Owner, android-dpc/)
+compile_variant() {
+    local variant="$1" extra="$2" out="$WORK/$1"
+    local SOURCES=()
+    mapfile -t SOURCES < <(find "$VENDOR/libs" -name '*.java')
+    for entry in "${APPS[@]}"; do
+        local app="${entry%%:*}" pkg="${entry##*:}"
+        # KioskUpdater hanya ada di ROM AOSP.
+        [[ "$variant" == dpc && "$app" != KioskLock ]] && continue
+        local r="$out/gen/${pkg//.//}/R.java"
+        python3 "$REPO_ROOT/scripts/tools/gen_r.py" "$VENDOR/apps/$app/res" "$r" "$pkg"
+        mapfile -t -O "${#SOURCES[@]}" SOURCES < <(find "$VENDOR/apps/$app/src" -name '*.java')
+        if [[ "$app" == KioskLock ]]; then
+            mapfile -t -O "${#SOURCES[@]}" SOURCES < <(find "$VENDOR/apps/$app/$extra" -name '*.java')
+        fi
+        SOURCES+=("$r")
+    done
+    mkdir -p "$out/classes"
+    log "Compile edisi $variant (${#SOURCES[@]} file)"
+    javac -encoding UTF-8 -Xlint:-deprecation -nowarn \
+        -cp "$JAR" -d "$out/classes" "${SOURCES[@]}" || die "Compile edisi $variant gagal (lihat error di atas)"
+}
+
+compile_variant aosp src-aosp
+compile_variant dpc src-dpc
+log "OK: edisi AOSP & Device Owner ter-compile tanpa error"
+echo "    Catatan: edisi Device Owner hanya boleh memakai API publik; itu baru terbukti saat"
+echo "    build Gradle (android-dpc/) dengan Android SDK, karena framework di sini memuat API internal."

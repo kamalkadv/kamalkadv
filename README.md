@@ -114,6 +114,8 @@ vendor/kioskos/
         ├── ServerClient.java        # ambil status + verifikasi tanda tangan
         ├── SyncJobService.java      # sinkron berkala
         └── BootReceiver.java
+        (src/ = kode bersama, src-aosp/ = khusus ROM, src-dpc/ = khusus edisi Device Owner)
+android-dpc/                         # proyek Gradle edisi Device Owner (lihat docs/DPC.md)
 scripts/                             # build, kunci, uji, rilis & publikasi OTA
 server/
 ├── server.py                        # status kunci, OTA, API admin (stdlib + cryptography)
@@ -131,6 +133,8 @@ server/
 > Uji otomatis kunci → reset → terkunci lagi: [docs/TESTING.md](docs/TESTING.md).
 > Server & dashboard admin: [docs/SERVER.md](docs/SERVER.md).
 > Rilis produksi & update OTA: [docs/RELEASE.md](docs/RELEASE.md).
+> **Tanpa ROM custom** (aplikasi Device Owner di Android biasa, bisa dicoba di emulator
+> SDK / mini PC): [docs/DPC.md](docs/DPC.md).
 
 ### 1. Siapkan AOSP / LineageOS untuk device Anda
 Anda butuh source tree yang bisa di-build untuk device target (device tree,

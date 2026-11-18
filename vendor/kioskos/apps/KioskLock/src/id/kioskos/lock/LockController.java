@@ -111,7 +111,7 @@ public final class LockController {
         }
         // Sembunyikan Developer Options & matikan ADB. Di build debug (userdebug/eng) boleh
         // dilewati lewat config agar pengujian otomatis via ADB tetap bisa berjalan.
-        boolean blockDebug = !Build.IS_DEBUGGABLE || mContext.getResources().getBoolean(
+        boolean blockDebug = "user".equals(Build.TYPE) || mContext.getResources().getBoolean(
                 R.bool.config_block_debugging_on_debuggable_builds);
         setRestriction(UserManager.DISALLOW_DEBUGGING_FEATURES, state.enrolled && blockDebug);
         if (state.enrolled) {

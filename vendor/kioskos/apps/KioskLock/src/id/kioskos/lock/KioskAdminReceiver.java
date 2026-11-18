@@ -13,6 +13,7 @@ public class KioskAdminReceiver extends DeviceAdminReceiver {
 
     @Override
     public void onEnabled(Context context, Intent intent) {
+        Provisioner.ensureDeviceOwner(context);
         LockController.get(context).applyFromStore();
         SyncJobService.schedule(context);
     }

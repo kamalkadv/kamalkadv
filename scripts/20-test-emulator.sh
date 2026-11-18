@@ -14,6 +14,11 @@ source "$(dirname "$0")/config.sh"
 
 DO_RESET=1
 [[ "${1:-}" == "--no-reset" ]] && DO_RESET=0
+# EDITION=aosp (default): ROM KioskOS. EDITION=dpc: aplikasi Device Owner di Android biasa
+# (android-dpc/, scripts/40-dpc-try.sh): tanpa priv-app/FRP, dan factory reset menghapusnya.
+EDITION="${EDITION:-aosp}"
+[[ "$EDITION" == aosp || "$EDITION" == dpc ]] || die "EDITION harus aosp atau dpc"
+if [[ "$EDITION" == dpc ]]; then DO_RESET=0; fi
 EMU_EXTRA_ARGS="${EMU_EXTRA_ARGS:--no-window}"
 PORT=8080
 SERVER_DIR="$REPO_ROOT/server"
@@ -141,10 +146,14 @@ start_server
 
 log "Tes 1: instalasi"
 if contains "$(ash pm list packages)" "^package:$PKG\$"; then pass "KioskLock terpasang"; else fail "KioskLock terpasang"; fi
-if contains "$(ash pm path "$PKG")" '/priv-app/'; then pass "KioskLock sebagai priv-app"; else fail "KioskLock sebagai priv-app"; fi
+if [[ "$EDITION" == dpc ]]; then
+    skip "Cek priv-app (edisi Device Owner dipasang sebagai aplikasi biasa)"
+elif contains "$(ash pm path "$PKG")" '/priv-app/'; then pass "KioskLock sebagai priv-app"
+else fail "KioskLock sebagai priv-app"; fi
 if is_device_owner; then pass "KioskLock adalah Device Owner"
 else fail "KioskLock adalah Device Owner (lihat logcat -s KioskLock.Provision)"; fi
-if [[ -n "$FRP" ]]; then pass "Partisi FRP tersedia ($FRP)"
+if [[ "$EDITION" == dpc ]]; then skip "Partisi FRP (tidak dipakai edisi Device Owner)"
+elif [[ -n "$FRP" ]]; then pass "Partisi FRP tersedia ($FRP)"
 else skip "Partisi FRP tidak ada di image emulator ini (lihat docs/TESTING.md)"; fi
 
 log "Tes 2: daftarkan perangkat (tidak dikunci)"
@@ -294,6 +303,8 @@ if (( DO_RESET )); then
     admin PUT '{"locked":false}'
     force_sync
     wait_for 60 lock_activity_gone || warn "Layar kunci belum hilang; tekan 'Cek status' di emulator."
+elif [[ "$EDITION" == dpc ]]; then
+    skip "Tes factory reset (edisi Device Owner: reset menghapus aplikasi; daftar ulang via QR)"
 else
     skip "Tes factory reset (dijalankan dengan --no-reset)"
 fi
